@@ -1,0 +1,53 @@
+# Android & Gradle Build Artifacts
+.gradle/
+build/
+**/build/
+.idea/
+*.iml
+local.properties
+.cxx/
+captures/
+.externalNativeBuild/
+
+# Node.js
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Binaries & Temporary Dumps
+cloudflared.exe
+temp-*.apk
+temp-*.apk.idsig
+test-*.apk
+test-*.apk.idsig
+*.idsig
+*.log
+
+# Legacy Decompiled Files & Blobs
+classes*.dex
+*_strings.txt
+apk_filelist.txt
+hermes_storage.bin
+index.android.bundle
+libhermes.so
+GSM-Relay-v1.3.1.apk
+GSM-Cloud-Relay-Gateway-v2.0.apk
+GSM-Cloud-Relay-Gateway-v2.1.apk
+GSM-Cloud-Relay-Gateway-v2.2.apk
+GSM-Cloud-Relay-Gateway-v2.3.apk
+GSM-Cloud-Relay-Gateway-v2.4.apk
+GSM-Cloud-Relay-Gateway-v2.5.apk
+GSM-Cloud-Relay-Gateway-v2.6.apk
+GSM-Cloud-Relay-Gateway-v2.6.*.apk
+GSM-Cloud-Relay-Gateway-v2.6.*.zip
+GSM-Relay-MeshRadar-v2.0-WORKING.apk
+DEPLOY_TO_RENDER/GSM-Cloud-Relay-Gateway-v2.[0-6]*.apk
+DEPLOY_TO_RENDER/GSM-Cloud-Relay-Gateway-v2.[0-6]*.zip
+web-terminal/GSM-Cloud-Relay-Gateway-v2.[0-6]*.apk
+web-terminal/GSM-Cloud-Relay-Gateway-v2.[0-6]*.zip
+
+# Operating System Files
+.DS_Store
+Thumbs.db

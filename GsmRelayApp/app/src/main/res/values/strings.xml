@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">وسيط GSM السحابي</string>
+    <string name="tab_gateway">وضع الوسيط (GSM)</string>
+    <string name="tab_terminal">وضع الطرفي (Remote)</string>
+
+    <!-- Gateway Strings -->
+    <string name="gateway_title">وسيط الشريحة (GSM Gateway)</string>
+    <string name="gateway_desc">يقوم هذا الجهاز بتمرير اتصالات شريحة الـ SIM وبث الصوت سحابياً للطرفي</string>
+    <string name="sim_status">حالة الشريحة:</string>
+    <string name="sim_carrier">الشبكة:</string>
+    <string name="cloud_status">حالة السحابة:</string>
+    <string name="room_id">معرف الغرفة / كود الاقتران:</string>
+    <string name="btn_start_gateway">بدء خدمة الوسيط</string>
+    <string name="btn_stop_gateway">إيقاف خدمة الوسيط</string>
+    <string name="auto_answer_title">الرد التلقائي على المكالمات الواردة</string>
+    <string name="speaker_relay_title">تفعيل مكبر الصوت لترحيل الصوت</string>
+    <string name="current_gsm_call">المكالمة الخلوية الحالية:</string>
+    <string name="call_idle">لا توجد مكالمة جارية</string>
+    <string name="call_ringing">رنين وارد...</string>
+    <string name="call_connected">المكالمة متصلة - جاري بث الصوت</string>
+    <string name="audio_rx_level">صوت الطرفي الوارد:</string>
+    <string name="audio_tx_level">صوت الشريحة الصادر:</string>
+    <string name="logs_title">سجل العمليات والاتصال:</string>
+
+    <!-- Terminal Strings -->
+    <string name="terminal_title">التطبيق الطرفي (Remote Terminal)</string>
+    <string name="terminal_desc">اتصل بالوسيط عبر السحابة لإجراء واستقبال المكالمات من أي مكان</string>
+    <string name="gateway_conn_status">حالة الوسيط:</string>
+    <string name="btn_connect_cloud">اتصال بالسحابة</string>
+    <string name="btn_disconnect_cloud">قطع الاتصال</string>
+    <string name="enter_phone_hint">أدخل رقم الهاتف للاتصال...</string>
+    <string name="btn_call">اتصال عبر الوسيط</string>
+    <string name="btn_end_call">إنهاء المكالمة</string>
+    <string name="btn_mute">كتم الميكروفون</string>
+    <string name="btn_speaker">مكبر الصوت</string>
+    <string name="status_calling">جاري طلب الرقم عبر الشريحة...</string>
+    <string name="status_in_call">المكالمة جارية عبر السحابة</string>
+    <string name="incoming_gsm_title">مكالمة GSM واردة عبر الوسيط!</string>
+    <string name="btn_accept">رد (قبول)</string>
+    <string name="btn_reject">رفض</string>
+    <string name="settings_server_url">عنوان خادم السحابة (WebSocket):</string>
+    <string name="select_gateway_label">اختر هاتف الوسيط لتمرير المكالمة:</string>
+    <string name="no_gateways_found">بانتظار ظهور الهواتف الوسيطة المتصلة...</string>
+</resources>

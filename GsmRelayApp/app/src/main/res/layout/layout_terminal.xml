@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="vertical"
+    android:background="@color/bg_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Remote Gateway Status & Selection Card -->
+        <LinearLayout
+            android:id="@+id/card_term_connection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <!-- Top Row: Status Dot + Connection Text + Carrier Badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/dot_term_gw_status"
+                    android:layout_width="9dp"
+                    android:layout_height="9dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/bg_status_dot_red" />
+
+                <TextView
+                    android:id="@+id/tv_term_gw_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="الوسيط: غير متصل"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_term_my_extension_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:text="تحويلتي: #105"
+                    android:textColor="@color/accent_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_term_gw_carrier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-- GSM"
+                    android:textColor="@color/accent_blue"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Terminal Internal Extension (Permanent #105) Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_keypad_btn"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="☎️ تحويلة هذا الهاتف الطرفي:"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_term_extension"
+                    android:layout_width="0dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center"
+                    android:hint="#105"
+                    android:inputType="textCapCharacters"
+                    android:maxLength="8"
+                    android:text="#105"
+                    android:textColor="@color/accent_green"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_term_save_extension"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:backgroundTint="@color/accent_blue"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="تثبيت"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Multi-Gateway Selection Spinner -->
+            <Spinner
+                android:id="@+id/spn_term_gateways"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_keypad_btn"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:spinnerMode="dropdown" />
+
+            <!-- Room Input & Connect Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_term_room"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:hint="معرف الغرفة (مثال: GSM-1001)"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:text="GSM-1001"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="11sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_term_connect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:backgroundTint="@color/accent_blue"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="@string/btn_connect_cloud"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Server URL (Collapsible/Editable) -->
+            <EditText
+                android:id="@+id/et_term_server_url"
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:layout_marginTop="4dp"
+                android:background="@null"
+                android:hint="عنوان الخادم"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="wss://relay1-tdgn.onrender.com"
+                android:textColor="@color/text_muted"
+                android:textColorHint="@color/text_muted"
+                android:textSize="10sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_term_keep_screen_on"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:checked="true"
+                android:text="🔆 إبقاء الشاشة مضاءة دائماً"
+                android:textColor="@color/accent_green"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- IN-CALL ACTIVE SCREEN (Visible only during call) -->
+        <LinearLayout
+            android:id="@+id/view_in_call"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <!-- Caller Info & Header (Compact) -->
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/stat_sys_phone_call"
+                android:tint="@color/accent_green"
+                app:tint="@color/accent_green" />
+
+            <TextView
+                android:id="@+id/tv_in_call_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/status_in_call"
+                android:textColor="@color/accent_green"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_in_call_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="+966501234567"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_in_call_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="00:00"
+                android:textColor="@color/text_secondary"
+                android:textSize="15sp" />
+
+            <!-- PROMINENT CALL CONTROL BUTTONS (Always visible, directly under Timer) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="14dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <!-- Mute Icon Button -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageButton
+                        android:id="@+id/btn_term_mute"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/btn_control_round"
+                        android:src="@drawable/ic_mic_on"
+                        android:contentDescription="@string/btn_mute" />
+
+                    <TextView
+                        android:id="@+id/tv_term_mute_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="كتم"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Hangup Button (Center, Big Red Circle, Always Reachable) -->
+                <ImageButton
+                    android:id="@+id/btn_term_hangup"
+                    android:layout_width="66dp"
+                    android:layout_height="66dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp"
+                    android:background="@drawable/btn_hangup"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/btn_end_call" />
+
+                <!-- Speaker Icon Button -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageButton
+                        android:id="@+id/btn_term_speaker"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/btn_control_round"
+                        android:src="@drawable/ic_speaker_on"
+                        android:contentDescription="@string/btn_speaker" />
+
+                    <TextView
+                        android:id="@+id/tv_term_speaker_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="مكبر الصوت"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Live Audio VU Meters (Compact) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="صوت المكالمة (GSM الوارد):"
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_term_audio_rx"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_marginTop="2dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/accent_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="صوت ميكروفونك (الصادر للوسيط):"
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_term_audio_tx"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_marginTop="2dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/accent_blue" />
+            </LinearLayout>
+
+            <!-- Real-time Call Event Telemetry Card (AT THE BOTTOM) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="#0A0E1A"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="الأحداث وحالة الاتصال الفعلية المباشرة:"
+                    android:textColor="@color/accent_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_term_call_events"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="2dp"
+                    android:text="[جاهز] بانتظار بدء المكالمة..."
+                    android:textColor="@color/text_primary"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- DIALPAD PANEL (Visible when IDLE) -->
+        <LinearLayout
+            android:id="@+id/view_dialpad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- Phone Number Input & Delete Card (Clear, Prominent, Never Covered) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp">
+
+                <ImageButton
+                    android:id="@+id/btn_clear_phone"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:tint="@color/text_muted"
+                    app:tint="@color/text_muted" />
+
+                <EditText
+                    android:id="@+id/et_phone_number"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:gravity="center"
+                    android:hint="@string/enter_phone_hint"
+                    android:inputType="phone"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btn_backspace"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_input_delete"
+                    android:tint="@color/text_secondary"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+
+            <!-- Numeric Keypad Grid (Compact, Fits all mobile screens) -->
+            <GridLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:columnCount="3"
+                android:rowCount="4">
+
+                <!-- Row 1 -->
+                <Button
+                    android:id="@+id/key_1"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_2"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="2"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_3"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="3"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <!-- Row 2 -->
+                <Button
+                    android:id="@+id/key_4"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="4"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_5"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="5"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_6"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="6"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <!-- Row 3 -->
+                <Button
+                    android:id="@+id/key_7"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="7"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_8"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="8"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_9"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="9"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <!-- Row 4 -->
+                <Button
+                    android:id="@+id/key_star"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="*"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_0"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="0"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/key_hash"
+                    android:layout_width="76dp"
+                    android:layout_height="42dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_keypad_btn"
+                    android:text="#"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+            </GridLayout>
+
+            <!-- Big Green Dial Button (Comfortable thumb reach) -->
+            <ImageButton
+                android:id="@+id/btn_term_dial"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/btn_dial"
+                android:src="@android:drawable/stat_sys_phone_call"
+                android:tint="@android:color/white"
+                app:tint="@android:color/white" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

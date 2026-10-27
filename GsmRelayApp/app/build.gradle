@@ -1,0 +1,97 @@
+plugins {
+    id 'com.android.application'
+}
+
+def versionPropsFile = file('../version.properties')
+def Properties versionProps = new Properties()
+
+if (versionPropsFile.canRead()) {
+    versionProps.load(new FileInputStream(versionPropsFile))
+} else {
+    versionProps['MAJOR'] = '2'
+    versionProps['MINOR'] = '1'
+    versionProps['PATCH'] = '0'
+    versionProps['BUILD'] = '1'
+}
+
+def buildNum = versionProps['BUILD'].toInteger() + 1
+versionProps['BUILD'] = buildNum.toString()
+versionProps.store(versionPropsFile.newWriter(), null)
+
+def major = versionProps['MAJOR'].toInteger()
+def minor = versionProps['MINOR'].toInteger()
+def patch = versionProps['PATCH'].toInteger()
+
+def appVersionCode = major * 10000 + minor * 1000 + patch * 100 + buildNum
+def appVersionName = "${major}.${minor}.${patch}-build.${buildNum}"
+
+android {
+    namespace 'com.gsmrelay.cloud'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.voxlink.gsmgateway"
+        minSdk 21
+        targetSdk 33
+        versionCode appVersionCode
+        versionName appVersionName
+
+        buildConfigField "String", "AUTO_VERSION_NAME", "\"${appVersionName}\""
+        buildConfigField "int", "AUTO_VERSION_CODE", "${appVersionCode}"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../voxlink-release.keystore")
+            storePassword "gsmrelay12345"
+            keyAlias "voxlink"
+            keyPassword "gsmrelay12345"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = false
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += 'META-INF/*.version'
+            excludes += 'META-INF/app-metadata.properties'
+            excludes += 'META-INF/version-control-info.textproto'
+            excludes += 'META-INF/**/*.properties'
+            excludes += 'META-INF/**/*.textproto'
+            excludes += 'META-INF/services/*'
+            excludes += 'META-INF/com/android/build/gradle/*'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}

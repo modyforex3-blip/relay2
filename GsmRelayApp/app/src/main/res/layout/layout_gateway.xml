@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/gateway_title"
+                    android:textColor="@color/accent_green"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_gw_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v2.1.0"
+                    android:textColor="@color/accent_blue"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/gateway_desc"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/card_border" />
+
+            <!-- SIM Info -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/sim_carrier"
+                    android:textColor="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tv_gw_carrier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="جاري فحص الشريحة..."
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Room ID & Start Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_gw_room"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card"
+                    android:hint="معرف الغرفة (مثال: GSM-1001)"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:text="GSM-1001"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_gw_toggle_service"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/accent_green"
+                    android:text="@string/btn_start_gateway"
+                    android:textColor="@android:color/black" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Automation & Audio Settings Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="إعدادات الترحيل الصوتي والمكالمات"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Keep Screen On Switch -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_keep_screen_on"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:checked="true"
+                android:text="🔆 إبقاء شاشة الهاتف مضاءة دائماً (يمنع قفل الهاتف وانقطاع الاتصال)"
+                android:textColor="@color/accent_green" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_auto_answer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:checked="true"
+                android:text="@string/auto_answer_title"
+                android:textColor="@color/text_secondary" />
+
+            <!-- Smart Acoustic Loudspeaker Bridge (Default ON 100% Reliable) -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_speaker_relay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="true"
+                android:text="🔊 جسر مكبر الصوت عالي الحساسية (Acoustic Relay - موصى به 100%)"
+                android:textColor="@color/accent_green" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="💡 ينقل صوت المكالمة الخلوية بنقاء عالي وفوري دون الحاجة لأي ملحقات (+16dB Boost)"
+                android:textColor="@color/text_muted"
+                android:textSize="11sp" />
+
+            <!-- Silent Private Mode -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_private_relay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="false"
+                android:text="🔒 وضع الغرفة الصامتة بالوسيط (يتطلب سماعة بلوتوث أو سلكية)"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="💡 لكتم صوت الهاتف الوسيط في الغرفة تماماً، قم بربط أي سماعة بلوتوث وتفعيل خيار البلوتوث أدناه"
+                android:textColor="@color/text_muted"
+                android:textSize="11sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_audio_boost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="true"
+                android:text="مضخم حساسية الصوت والميكروفون (+14dB Boost)"
+                android:textColor="@color/text_secondary" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_bluetooth_sco"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="false"
+                android:text="🎧 توجيه الصوت لسماعة البلوتوث (Bluetooth SCO - خصوصية تامة وصامت)"
+                android:textColor="@color/accent_blue" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_sms_relay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="true"
+                android:text="📨 تفعيل ترحيل واستقبال الرسائل النصية (SMS Relay)"
+                android:textColor="@color/accent_blue" />
+
+            <!-- Audio Source Selector -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="مصدر التقاط الصوت من الجهاز:"
+                android:textColor="@color/accent_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/spn_gw_audio_source"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_keypad_btn"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:spinnerMode="dropdown" />
+
+            <!-- Pre-call Sound Stream Test to Terminal -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_stream_audio_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/accent_blue"
+                android:text="📡 بث نغمة وصوت تجريبي إلى الطرفي (Test Stream)"
+                android:textColor="@android:color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_audio_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:backgroundTint="@color/keypad_btn_bg"
+                android:text="🔊 فحص الميكروفون المحلي (Local Loopback)"
+                android:textColor="@color/text_primary" />
+
+            <!-- Custom Server URL -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/settings_server_url"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/et_gw_server_url"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_card"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="wss://relay1-tdgn.onrender.com"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Active GSM Call Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/current_gsm_call"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_gw_call_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/call_idle"
+                    android:textColor="@color/text_muted"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_gw_call_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="--"
+                android:textColor="@color/accent_blue"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Real-time Call Event Telemetry Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#0A0E1A"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="حالة الاتصال والترحيل الفعلية:"
+                    android:textColor="@color/accent_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_gw_call_events"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="3dp"
+                    android:text="[جاهز] بانتظار تلقي اتصالات من الطرفي..."
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Audio VU Meters -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/audio_tx_level"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_gw_audio_tx"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="@color/accent_green" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/audio_rx_level"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_gw_audio_rx"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="@color/accent_blue" />
+        </LinearLayout>
+
+        <!-- Live Telemetry / Event Log -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/logs_title"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_gw_logs"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginTop="8dp"
+                android:background="#0A0E1A"
+                android:fontFamily="monospace"
+                android:padding="8dp"
+                android:scrollbars="vertical"
+                android:text="[Ready] بدء نظام الوسيط..."
+                android:textColor="@color/accent_green"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
