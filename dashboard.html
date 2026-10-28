@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المتابعة الحية للنظام | GSM Cloud Relay Dashboard</title>
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#080C15">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GSM Dashboard">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" href="/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #080C15;
+            --card-dark: #0F172A;
+            --card-border: #1E293B;
+            --accent-green: #10B981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-blue: #3B82F6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.25);
+            --accent-red: #EF4444;
+            --accent-amber: #F59E0B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.dashboard-locked .dashboard-container {
+            filter: blur(16px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transition: filter 0.3s ease;
+        }
+
+        /* Top Nav & Header */
+        .top-navbar {
+            background: var(--card-dark);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10B981, #047857);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-green-glow);
+        }
+
+        .brand-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .brand-sub {
+            font-size: 12px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .nav-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-terminal {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-blue-glow);
+        }
+
+        .btn-apk {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-green-glow);
+        }
+
+        .btn-copy {
+            background: #1E293B;
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-copy:hover {
+            background: #334155;
+            color: white;
+        }
+
+        .btn-lock {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #F87171;
+        }
+
+        .btn-lock:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+
+        /* Server Quick Info Bar */
+        .server-banner {
+            background: #0D1424;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .server-endpoint-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pulse-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 12px var(--accent-green);
+            animation: pulseAnim 1.8s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .endpoint-badge {
+            background: #060911;
+            border: 1px solid var(--card-border);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent-blue);
+            direction: ltr;
+        }
+
+        /* Tabs Navigation Bar */
+        .dash-tabs-bar {
+            display: flex;
+            gap: 10px;
+            background: #0D1424;
+            padding: 6px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+        }
+
+        .dash-tab-btn {
+            flex: 1;
+            padding: 12px 18px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .dash-tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .dash-tab-btn.active {
+            background: var(--card-dark);
+            color: var(--accent-green);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dash-tab-btn#tabBtnSms.active {
+            color: var(--accent-blue);
+        }
+
+        .tab-badge-counter {
+            background: var(--accent-blue);
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* KPI Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--card-dark);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            border-color: #334155;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-card, var(--accent-blue));
+        }
+
+        .metric-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin: 10px 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Panels and Layouts */
+        .panel-card {
+            background: var(--card-dark);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0D1424;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-badge {
+            background: #1E293B;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .main-content-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Gateway Item Card */
+        .gateway-item-card {
+            background: #0A0F1D;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .gateway-item-card:hover {
+            border-color: #334155;
+            background: #0D1527;
+        }
+
+        .gw-device-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .gw-device-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gw-carrier-tag {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent-blue);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .gw-room-id {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .gw-room-id b {
+            color: var(--text-secondary);
+        }
+
+        .gw-status-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gw-status-idle {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+        }
+
+        .gw-status-busy {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--accent-red);
+        }
+
+        .btn-call-gw {
+            background: var(--accent-green);
+            color: black;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-call-gw:hover {
+            background: #059669;
+            color: white;
+        }
+
+        /* Empty Placeholder */
+        .empty-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 10px;
+            color: var(--text-muted);
+            text-align: center;
+            gap: 8px;
+        }
+
+        .empty-icon {
+            font-size: 32px;
+            opacity: 0.6;
+        }
+
+        /* Live Activity Log Stream */
+        .log-stream {
+            background: #060911;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            max-height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .log-row {
+            display: flex;
+            gap: 8px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .log-msg {
+            color: var(--text-primary);
+        }
+
+        .log-msg.success { color: var(--accent-green); }
+        .log-msg.call { color: var(--accent-blue); font-weight: 700; }
+        .log-msg.warn { color: var(--accent-amber); }
+        .log-msg.error { color: var(--accent-red); }
+
+        /* =====================================================================
+           SMS RELAY TAB STYLES
+           ===================================================================== */
+        .sms-grid-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 950px) {
+            .sms-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sms-form-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sms-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sms-input-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sms-select, .sms-input, .sms-textarea {
+            width: 100%;
+            background: #080D1A;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .sms-select:focus, .sms-input:focus, .sms-textarea:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px var(--accent-blue-glow);
+        }
+
+        .sms-textarea {
+            resize: vertical;
+            min-height: 110px;
+            line-height: 1.5;
+        }
+
+        .sms-char-counter {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .sms-feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .sms-msg-card {
+            background: #0A0F1D;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .sms-msg-card.incoming {
+            border-right: 4px solid var(--accent-green);
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, #0A0F1D 100%);
+        }
+
+        .sms-msg-card.outgoing {
+            border-right: 4px solid var(--accent-blue);
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.04) 0%, #0A0F1D 100%);
+        }
+
+        .sms-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .sms-direction-tag {
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sms-direction-tag.incoming { color: var(--accent-green); }
+        .sms-direction-tag.outgoing { color: var(--accent-blue); }
+
+        .sms-phone-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            direction: ltr;
+            color: var(--text-primary);
+        }
+
+        .sms-body-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #070B14;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .sms-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .sms-status-pill {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .sms-status-pill.sent { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .sms-status-pill.pending { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+        .sms-status-pill.failed { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .sms-status-pill.received { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+
+        .btn-reply-sms {
+            background: #1E293B;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reply-sms:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Filter Pills */
+        .filter-pills-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-pill {
+            background: #0D1424;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-pill.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* =====================================================================
+           PIN AUTHENTICATION MODAL OVERLAY (Masked, Code: 527149, Secret)
+           ===================================================================== */
+        .pin-auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(6, 10, 18, 0.92);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 16px;
+        }
+
+        .pin-auth-card {
+            background: #0F172A;
+            border: 1px solid #1E293B;
+            border-radius: 24px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .pin-auth-card.shake {
+            animation: shakeAnim 0.4s ease-in-out;
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .pin-shield-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #10B981, #065F46);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            box-shadow: 0 8px 25px var(--accent-green-glow);
+        }
+
+        .pin-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--text-primary);
+        }
+
+        .pin-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .pin-input-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .pin-input-field {
+            width: 100%;
+            height: 52px;
+            background: #070B14;
+            border: 2px solid var(--card-border);
+            border-radius: 14px;
+            font-size: 26px;
+            text-align: center;
+            letter-spacing: 12px;
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            transition: all 0.2s;
+            padding: 0 40px;
+        }
+
+        .pin-input-field:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px var(--accent-green-glow);
+        }
+
+        .btn-pin-clear {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .btn-pin-clear:hover {
+            color: var(--accent-red);
+        }
+
+        .pin-error-msg {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-red);
+            display: none;
+        }
+
+        .pin-keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .pin-num-btn {
+            background: #131E33;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            height: 48px;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pin-num-btn:hover {
+            background: #1E293B;
+            border-color: #475569;
+            transform: scale(1.02);
+        }
+
+        .pin-num-btn:active {
+            transform: scale(0.96);
+            background: var(--accent-green);
+            color: black;
+        }
+
+        .pin-num-btn.pin-func-btn {
+            font-size: 14px;
+            font-family: 'Cairo', sans-serif;
+            color: var(--text-secondary);
+        }
+
+        .btn-unlock-pin {
+            width: 100%;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 6px;
+            box-shadow: 0 4px 18px var(--accent-green-glow);
+            transition: all 0.2s;
+        }
+
+        .btn-unlock-pin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px var(--accent-green-glow);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-dark);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 100000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="dashboard-locked">
+
+<!-- =========================================================================
+     PIN AUTHENTICATION OVERLAY (Secret 527149, Masked "لا يظهر لأحد")
+     ========================================================================= -->
+<div id="pinAuthOverlay" class="pin-auth-overlay">
+    <div class="pin-auth-card" id="pinCard">
+        <div class="pin-shield-icon">🔐</div>
+        <div class="pin-title">منطقة الإدارة الآمنة</div>
+        <div class="pin-desc">يرجى إدخال الرقم السري المعتمد للدخول إلى لوحة التحكم المباشرة وإدارة الرسائل النصية</div>
+        
+        <div class="pin-input-wrapper">
+            <input type="password" id="inputPinCode" class="pin-input-field" maxlength="10" placeholder="••••••" autocomplete="off" autofocus>
+            <button id="btnClearPin" class="btn-pin-clear" onclick="clearPinInput()" title="مسح">✕</button>
+        </div>
+
+        <div id="pinErrorMsg" class="pin-error-msg">❌ الرمز السري غير صحيح! يرجى إعادة المحاولة.</div>
+
+        <div class="pin-keypad-grid">
+            <button class="pin-num-btn" onclick="pressPinDigit('1')">1</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('2')">2</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('3')">3</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('4')">4</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('5')">5</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('6')">6</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('7')">7</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('8')">8</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('9')">9</button>
+            <button class="pin-num-btn pin-func-btn" onclick="clearPinInput()">مسح</button>
+            <button class="pin-num-btn" onclick="pressPinDigit('0')">0</button>
+            <button class="pin-num-btn pin-func-btn" onclick="backspacePin()">⌫</button>
+        </div>
+
+        <button id="btnSubmitPin" class="btn-unlock-pin" onclick="verifyPinCode()">
+            <span>🔓 فتح لوحة التحكم</span>
+        </button>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <div class="brand-box">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">لوحة المتابعة الحية لنظام وسيط مكالمات GSM</div>
+                <div class="brand-sub">GSM Cloud Live Operations & Telemetry Dashboard</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button id="btnInstallPwaDash" class="btn" onclick="triggerPwaInstall()" style="display:none; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; box-shadow:0 4px 15px rgba(99,102,241,0.35);">
+                <span>📲 تثبيت التطبيق (PWA)</span>
+            </button>
+            <a href="/terminal" target="_blank" class="btn btn-terminal">
+                <span>📱 فتح الهاتف الطرفي للاتصال (Web Phone)</span>
+            </a>
+            <a href="/download" class="btn btn-apk">
+                <span>📥 تحميل تطبيق الأندرويد (APK)</span>
+            </a>
+            <button id="btnCopyWss" class="btn btn-copy" title="نسخ رابط WebSocket لتطبيق الأندرويد">
+                <span>📋 نسخ رابط السيرفر</span>
+            </button>
+            <button id="btnLockDashboard" class="btn btn-lock" title="قفل لوحة التحكم فوراً" onclick="lockDashboard()">
+                <span>🔒 قفل اللوحة</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Cloud Server Status Banner -->
+    <div class="server-banner">
+        <div class="server-endpoint-group">
+            <div class="pulse-indicator"></div>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">السيرفر السحابي المباشر:</span>
+            <div class="endpoint-badge" id="badgeServerUrl">
+                <span id="txtServerUrl">جاري الاتصال بالسيرفر المباشر...</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center; font-size: 12px;">
+            <span style="color: var(--text-muted);">حالة الاتصال: <b style="color: var(--accent-green);">متصل 100% (Online)</b></span>
+            <span style="color: var(--text-muted);">وقت التشغيل: <b id="txtUptime" style="color: var(--text-primary); font-family: 'JetBrains Mono';">00:00:00</b></span>
+        </div>
+    </div>
+
+    <!-- Dashboard Tabs Navigation Bar -->
+    <div class="dash-tabs-bar">
+        <button id="tabBtnTelemetry" class="dash-tab-btn active" onclick="switchDashboardTab('telemetry')">
+            <span>📊 مركز المراقبة والاتصالات المباشرة</span>
+        </button>
+        <button id="tabBtnSms" class="dash-tab-btn" onclick="switchDashboardTab('sms')">
+            <span>💬 إدارة الرسائل النصية القصيرة SMS</span>
+            <span id="badgeSmsCount" class="tab-badge-counter">0</span>
+        </button>
+    </div>
+
+    <!-- =====================================================================
+         TAB 1: TELEMETRY & OPERATIONS
+         ===================================================================== -->
+    <div id="tabContentTelemetry" style="display: flex; flex-direction: column; gap: 18px;">
+        <!-- KPI Metric Cards Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card" style="--accent-card: var(--accent-green);">
+                <div class="metric-title">
+                    <span>📱 الهواتف الوسيطة المتصلة</span>
+                </div>
+                <div class="metric-value" id="valGatewaysCount">0</div>
+                <div class="metric-sub" id="subGatewaysText">بانتظار شبك تطبيق الأندرويد</div>
+            </div>
+
+            <div class="metric-card" style="--accent-card: var(--accent-blue);">
+                <div class="metric-title">
+                    <span>💻 الهواتف الطرفية النشطة</span>
+                </div>
+                <div class="metric-value" id="valTerminalsCount">0</div>
+                <div class="metric-sub">أجهزة الويب والهواتف الطرفية</div>
+            </div>
+
+            <div class="metric-card" style="--accent-card: var(--accent-amber);">
+                <div class="metric-title">
+                    <span>📞 المكالمات الجارية الآن</span>
+                </div>
+                <div class="metric-value" id="valActiveCalls">0</div>
+                <div class="metric-sub" id="subCallsText">لا توجد مكالمات نشطة حالياً</div>
+            </div>
+
+            <div class="metric-card" style="--accent-card: #8B5CF6;">
+                <div class="metric-title">
+                    <span>📊 حزم الصوت المنقولة</span>
+                </div>
+                <div class="metric-value" id="valAudioPackets">0</div>
+                <div class="metric-sub">صوت عالي الدقة 16kHz PCM</div>
+            </div>
+        </div>
+
+        <!-- Real-time Active Call Interceptor Card -->
+        <div id="activeCallInterceptorCard" class="panel-card" style="display: none; border: 1px solid var(--accent-green); background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, #0F172A 100%); padding: 18px 22px; box-shadow: 0 8px 32px var(--accent-green-glow);">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--accent-green); display: flex; align-items: center; justify-content: center; font-size: 24px; color: black; box-shadow: 0 0 25px var(--accent-green); animation: pulseAnim 1.4s infinite;">
+                        📞
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 11px; font-weight: 800; color: var(--accent-green); background: rgba(16, 185, 129, 0.2); padding: 3px 8px; border-radius: 6px;">● مكالمة هاتفية جارية عبر الوسيط</span>
+                            <span id="interceptorGatewayBadge" style="font-size: 11px; color: var(--accent-blue); background: rgba(59, 130, 246, 0.15); padding: 3px 8px; border-radius: 6px;">--</span>
+                        </div>
+                        <div id="interceptorPhoneNumber" style="font-size: 24px; font-weight: 900; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            +966500000000
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-muted);">مدة المكالمة الفعلية</div>
+                        <div id="interceptorCallDuration" style="font-size: 22px; font-weight: 900; color: var(--accent-green); font-family: 'JetBrains Mono', monospace;">00:00</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-muted);">معدل تدفق الصوت</div>
+                        <div id="interceptorBitrate" style="font-size: 22px; font-weight: 900; color: var(--accent-blue); font-family: 'JetBrains Mono', monospace;">64 kbps</div>
+                    </div>
+                    <button id="btnInterceptorHangup" class="btn" style="background: var(--accent-red); color: white; padding: 12px 20px; font-size: 13px; font-weight: 800; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.45); cursor: pointer;">
+                        <span>🛑 إنهاء المكالمة عن بُعد (Emergency Hangup)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Telecom Performance Charts -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+            <div class="panel-card" style="padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 13px; font-weight: 700; color: var(--accent-green); display: flex; align-items: center; gap: 6px;">
+                        📈 معدل تدفق الصوت المباشر (Audio Bitrate Throughput)
+                    </span>
+                    <span class="panel-badge" id="txtCurrentBitrate">0 kbps</span>
+                </div>
+                <div style="height: 140px; position: relative;">
+                    <canvas id="chartBitrate"></canvas>
+                </div>
+            </div>
+
+            <div class="panel-card" style="padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 13px; font-weight: 700; color: var(--accent-blue); display: flex; align-items: center; gap: 6px;">
+                        ⚡ استجابة السحابة اللحظية (Cloud Latency & Packets)
+                    </span>
+                    <span class="panel-badge" id="txtCurrentLatency">-- ms</span>
+                </div>
+                <div style="height: 140px; position: relative;">
+                    <canvas id="chartLatency"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Audio Spectrum & MOS Analytics -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+            <div class="panel-card" style="padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 13px; font-weight: 700; color: var(--accent-green); display: flex; align-items: center; gap: 6px;">
+                        🎛️ مرسمة الطيف الصوتي اللحظي للمكالمة (Real-time Audio Spectrum Analyzer)
+                    </span>
+                    <span class="panel-badge" style="color: var(--accent-green); border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1);">16-bit PCM @ 16kHz</span>
+                </div>
+                <div style="height: 100px; position: relative; background: #070B13; border-radius: 10px; border: 1px solid var(--card-border); overflow: hidden; padding: 6px;">
+                    <canvas id="canvasSpectrum" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="panel-card" style="padding: 16px; justify-content: center;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">
+                    🎙️ تقييم جودة المكالمة (MOS Voice Quality)
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 6px;">
+                    <span id="txtMosScore" style="font-size: 32px; font-weight: 900; color: var(--accent-green); font-family: 'JetBrains Mono', monospace;">4.45</span>
+                    <span style="font-size: 14px; color: var(--text-muted);">/ 5.0 HD</span>
+                </div>
+                <div style="font-size: 11px; color: var(--accent-green); font-weight: 700; margin-top: 2px;">
+                    ✓ نقاء صوت استثنائي (HD Telecom Voice)
+                </div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 8px; display: flex; justify-content: space-between;">
+                    <span>التأخير (Jitter): <b>&lt; 2ms</b></span>
+                    <span>فقدان الحزم: <b>0.0%</b></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content 2-Columns -->
+        <div class="main-content-layout">
+            <!-- Active Gateways List Panel -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📱 قائمة الهواتف الوسيطة الفعالة (GSM Gateways)</span>
+                    </div>
+                    <div class="panel-badge" id="badgeGwTotal">0 هواتف</div>
+                </div>
+                <div class="panel-body" id="gatewaysContainer" style="padding: 16px;">
+                    <div class="empty-placeholder">
+                        <div class="empty-icon">📱</div>
+                        <div>لا توجد هواتف وسيطة متصلة حالياً</div>
+                        <div style="font-size: 11px;">شغّل تطبيق الأندرويد على هاتف الوسيط واضغط على "بدء خدمة الوسيط" ليظهر هنا فوراً.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Terminals & Extensions Panel -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📞 الهواتف الطرفية والتحويلات الداخلية (Terminals & Intercom)</span>
+                    </div>
+                    <div class="panel-badge" id="badgeTerminalsTotal" style="color: #38BDF8; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.1);">0 تحويلات</div>
+                </div>
+                <div class="panel-body" id="terminalsContainer" style="padding: 16px;">
+                    <div class="empty-placeholder">
+                        <div class="empty-icon">📞</div>
+                        <div>لا توجد هواتف طرفية متصلة حالياً</div>
+                        <div style="font-size: 11px;">افتح الهاتف الطرفي (Web Terminal) على أي جهاز لتسجيل تحويلة جديدة (#101, #102, ...).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Operations Log Panel -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📡 سجل الاتصال والأحداث اللحظي المباشر (Audit Log)</span>
+                    </div>
+                    <div class="panel-badge">مباشر 🟢</div>
+                </div>
+                <div class="panel-body" style="padding: 12px;">
+                    <div class="log-stream" id="logStream">
+                        <!-- Logs injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         TAB 2: SMS MANAGEMENT & RELAY CENTER
+         ===================================================================== -->
+    <div id="tabContentSms" style="display: none; flex-direction: column; gap: 18px;">
+        <!-- Gateway Selection Banner for SMS -->
+        <div class="panel-card" style="padding: 16px 20px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 24px;">📨</div>
+                    <div>
+                        <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">مركز تحويل وترحيل الرسائل النصية القصيرة (SMS Relay)</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">إرسال واستقبال الرسائل النصية SMS عبر شريحة SIM الخاصة بالهاتف الوسيط المختار</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">الهاتف الوسيط الفعال للإرسال:</span>
+                    <select id="smsSelectGateway" class="sms-select" style="width: auto; min-width: 240px; padding: 8px 12px; font-size: 12px;">
+                        <option value="">-- الوسيط التلقائي (الأول المتاح) --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS Workspace: Compose & Feed -->
+        <div class="sms-grid-layout">
+            <!-- Left Column: Compose & Send SMS -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📤 إرسال رسالة نصية جديدة (Compose SMS)</span>
+                    </div>
+                </div>
+                <div class="sms-form-card">
+                    <div class="sms-input-group">
+                        <label class="sms-input-label" for="smsRecipientInput">
+                            <span>رقم هاتف المستلم (Recipient):</span>
+                            <span style="font-size: 10px; color: var(--text-muted);">شاملاً رمز الدولة (مثال: +966...)</span>
+                        </label>
+                        <input type="tel" id="smsRecipientInput" class="sms-input" placeholder="+9665xxxxxxxx" dir="ltr" style="font-family: 'JetBrains Mono', monospace;">
+                    </div>
+
+                    <div class="sms-input-group">
+                        <div class="sms-input-label">
+                            <span>نص الرسالة (Message Body):</span>
+                            <span id="smsCharCounter" class="sms-char-counter">0 / 70 حرف (1 SMS)</span>
+                        </div>
+                        <textarea id="smsMessageInput" class="sms-textarea" placeholder="اكتب نص الرسالة النصية التي تريد إرسالها عبر الهاتف الوسيط..."></textarea>
+                    </div>
+
+                    <button id="btnSendSms" class="btn btn-terminal" style="width: 100%; justify-content: center; padding: 13px; font-size: 14px;" onclick="submitSendSms()">
+                        <span>📤 إرسال الرسالة عبر الهاتف الوسيط</span>
+                    </button>
+
+                    <div id="smsSendAlert" style="display: none; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: SMS Feed & Thread -->
+            <div class="panel-card">
+                <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+                    <div class="panel-title">
+                        <span>💬 صندوق ومحادثات الرسائل النصية (SMS Feed)</span>
+                    </div>
+                    <div class="filter-pills-bar">
+                        <button class="filter-pill active" onclick="setSmsFilter('ALL', this)">الكل</button>
+                        <button class="filter-pill" onclick="setSmsFilter('INBOX', this)">📥 الواردة</button>
+                        <button class="filter-pill" onclick="setSmsFilter('OUTBOX', this)">📤 الصادرة</button>
+                    </div>
+                </div>
+
+                <div style="padding: 12px 16px 0;">
+                    <input type="text" id="smsSearchInput" class="sms-input" placeholder="🔍 بحث في الرسائل برقم الهاتف أو المحتوى..." oninput="renderSmsFeed()">
+                </div>
+
+                <div class="sms-feed-container" id="smsFeedContainer">
+                    <div class="empty-placeholder">
+                        <div class="empty-icon">💬</div>
+                        <div>لا توجد رسائل نصية بعد</div>
+                        <div style="font-size: 11px;">الرسائل الواردة إلى الهاتف الوسيط والصادرة منه ستظهر هنا مباشرة ولحظياً.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">تم الإجراء بنجاح!</div>
+
+<script>
+    // =========================================================================
+    // SECURITY PIN LOGIC (Default 527149, Masked "لا يظهر لأحد")
+    // =========================================================================
+    const DEFAULT_PIN = "527149";
+    const AUTH_SESSION_KEY = "gsm_dash_auth_unlocked";
+
+    const pinOverlay = document.getElementById('pinAuthOverlay');
+    const inputPinCode = document.getElementById('inputPinCode');
+    const pinErrorMsg = document.getElementById('pinErrorMsg');
+    const pinCard = document.getElementById('pinCard');
+
+    function checkAuth() {
+        if (sessionStorage.getItem(AUTH_SESSION_KEY) === "true") {
+            unlockDashboardUI();
+        } else {
+            lockDashboard();
+        }
+    }
+
+    function unlockDashboardUI() {
+        document.body.classList.remove('dashboard-locked');
+        pinOverlay.style.display = 'none';
+        pinErrorMsg.style.display = 'none';
+        inputPinCode.value = '';
+    }
+
+    function lockDashboard() {
+        sessionStorage.removeItem(AUTH_SESSION_KEY);
+        document.body.classList.add('dashboard-locked');
+        pinOverlay.style.display = 'flex';
+        inputPinCode.value = '';
+        pinErrorMsg.style.display = 'none';
+        inputPinCode.focus();
+    }
+
+    function pressPinDigit(digit) {
+        if (inputPinCode.value.length < 8) {
+            inputPinCode.value += digit;
+            if (inputPinCode.value.length === 6) {
+                verifyPinCode();
+            }
+        }
+    }
+
+    function clearPinInput() {
+        inputPinCode.value = '';
+        pinErrorMsg.style.display = 'none';
+    }
+
+    function backspacePin() {
+        if (inputPinCode.value.length > 0) {
+            inputPinCode.value = inputPinCode.value.slice(0, -1);
+            pinErrorMsg.style.display = 'none';
+        }
+    }
+
+    function verifyPinCode() {
+        const entered = inputPinCode.value.trim();
+        if (entered === DEFAULT_PIN) {
+            sessionStorage.setItem(AUTH_SESSION_KEY, "true");
+            unlockDashboardUI();
+            showToast("✓ تم الدخول بنجاح! مرحباً بك في لوحة التحكم.");
+        } else {
+            pinErrorMsg.style.display = 'block';
+            pinCard.classList.add('shake');
+            setTimeout(() => pinCard.classList.remove('shake'), 500);
+            inputPinCode.value = '';
+        }
+    }
+
+    inputPinCode.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            verifyPinCode();
+        }
+    });
+
+    // Check auth immediately on load
+    checkAuth();
+
+    // =========================================================================
+    // TOAST NOTIFICATIONS & AUDIO CHIME
+    // =========================================================================
+    const serverUrl = window.location.protocol === 'https:' 
+        ? 'wss://' + window.location.host 
+        : 'ws://' + window.location.host;
+
+    const toast = document.getElementById('toast');
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    // Play subtle audio alert for incoming SMS using Web Audio API
+    function playNotificationChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.36);
+        } catch (ignored) {}
+    }
+
+    document.getElementById('txtServerUrl').textContent = serverUrl;
+    document.getElementById('btnCopyWss').addEventListener('click', () => {
+        navigator.clipboard.writeText(serverUrl).then(() => {
+            showToast('تم نسخ رابط السيرفر السحابي بنجاح!');
+        }).catch(() => {
+            prompt('انسخ الرابط يدوياً:', serverUrl);
+        });
+    });
+
+    // =========================================================================
+    // TAB SWITCHING (TELEMETRY vs SMS)
+    // =========================================================================
+    let currentDashboardTab = 'telemetry';
+    function switchDashboardTab(tab) {
+        currentDashboardTab = tab;
+        const btnTel = document.getElementById('tabBtnTelemetry');
+        const btnSms = document.getElementById('tabBtnSms');
+        const contentTel = document.getElementById('tabContentTelemetry');
+        const contentSms = document.getElementById('tabContentSms');
+
+        if (tab === 'telemetry') {
+            btnTel.classList.add('active');
+            btnSms.classList.remove('active');
+            contentTel.style.display = 'flex';
+            contentSms.style.display = 'none';
+        } else {
+            btnTel.classList.remove('active');
+            btnSms.classList.add('active');
+            contentTel.style.display = 'none';
+            contentSms.style.display = 'flex';
+            renderSmsFeed();
+        }
+    }
+
+    // =========================================================================
+    // SMS CHAR COUNTER LOGIC
+    // =========================================================================
+    const smsMessageInput = document.getElementById('smsMessageInput');
+    const smsCharCounter = document.getElementById('smsCharCounter');
+
+    smsMessageInput.addEventListener('input', () => {
+        const text = smsMessageInput.value;
+        const isArabic = /[\u0600-\u06FF]/.test(text);
+        const singleLimit = isArabic ? 70 : 160;
+        const multiLimit = isArabic ? 67 : 153;
+
+        const len = text.length;
+        let parts = 1;
+        if (len > singleLimit) {
+            parts = Math.ceil(len / multiLimit);
+        }
+        smsCharCounter.textContent = `${len} / ${parts > 1 ? parts * multiLimit : singleLimit} حرف (${parts} SMS)`;
+    });
+
+    // Format Uptime
+    function formatUptime(seconds) {
+        const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    }
+
+    // Append Log
+    function addLogEntry(time, msg, type = 'info') {
+        const logStream = document.getElementById('logStream');
+        if (!logStream) return;
+        const row = document.createElement('div');
+        row.className = 'log-row';
+        row.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg ${type}">${msg}</span>`;
+        logStream.insertBefore(row, logStream.firstChild);
+        if (logStream.children.length > 50) {
+            logStream.removeChild(logStream.lastChild);
+        }
+    }
+
+    // Active Call Interceptor State
+    let activeCallTimerInterval = null;
+    let activeCallStartTime = null;
+
+    // SMS Messages State
+    let allSmsMessages = [];
+    let currentSmsFilter = 'ALL';
+    let availableGateways = [];
+
+    // =========================================================================
+    // TELEMETRY & GATEWAY RENDERING
+    // =========================================================================
+    function applyTelemetry(data) {
+        if (!data) return;
+
+        if (data.uptime) {
+            document.getElementById('txtUptime').textContent = formatUptime(data.uptime);
+        }
+
+        const gatewaysCount = data.totalGateways || 0;
+        const terminalsCount = data.totalTerminals || 0;
+        const activeCalls = data.activeCalls || 0;
+        const audioPackets = data.totalAudioPackets || 0;
+        const totalSms = data.totalSms || 0;
+
+        document.getElementById('valGatewaysCount').textContent = gatewaysCount;
+        document.getElementById('subGatewaysText').textContent = gatewaysCount > 0 ? `${gatewaysCount} هاتف وسيط جاهز لتمرير المكالمات` : 'بانتظار شبك تطبيق الأندرويد';
+        document.getElementById('badgeGwTotal').textContent = `${gatewaysCount} هواتف`;
+
+        document.getElementById('valTerminalsCount').textContent = terminalsCount;
+        document.getElementById('valActiveCalls').textContent = activeCalls;
+        document.getElementById('subCallsText').textContent = activeCalls > 0 ? 'مكالمات جارية عبر شريحة GSM' : 'لا توجد مكالمات نشطة حالياً';
+        document.getElementById('valAudioPackets').textContent = audioPackets.toLocaleString();
+        document.getElementById('badgeSmsCount').textContent = totalSms;
+
+        // 1. ACTIVE CALL INTERCEPTOR CARD HANDLING
+        const interceptorCard = document.getElementById('activeCallInterceptorCard');
+        if (activeCalls > 0 || (data.activeCallsDetail && data.activeCallsDetail.length > 0)) {
+            interceptorCard.style.display = "block";
+            const currentCall = (data.activeCallsDetail && data.activeCallsDetail.length > 0) 
+                ? data.activeCallsDetail[0] 
+                : { number: 'مكالمة جارية عبر الوسيط', gatewayName: 'هاتف الوسيط', carrier: 'GSM', callStartTime: Date.now() - 5000, room: 'GSM-1001' };
+
+            document.getElementById('interceptorPhoneNumber').textContent = currentCall.number || 'مكالمة جارية';
+            document.getElementById('interceptorGatewayBadge').textContent = `الوسيط: ${currentCall.gatewayName || 'GSM'} (${currentCall.carrier || 'GSM'}) [غرفة: ${currentCall.room || 'GSM-1001'}]`;
+            
+            if (!activeCallStartTime || Math.abs(activeCallStartTime - currentCall.callStartTime) > 10000) {
+                activeCallStartTime = currentCall.callStartTime || Date.now();
+            }
+
+            if (!activeCallTimerInterval) {
+                activeCallTimerInterval = setInterval(() => {
+                    if (activeCallStartTime) {
+                        const elapsedSec = Math.max(0, Math.floor((Date.now() - activeCallStartTime) / 1000));
+                        const m = Math.floor(elapsedSec / 60).toString().padStart(2, '0');
+                        const s = (elapsedSec % 60).toString().padStart(2, '0');
+                        document.getElementById('interceptorCallDuration').textContent = `${m}:${s}`;
+                    }
+                }, 1000);
+            }
+
+            const btnHangup = document.getElementById('btnInterceptorHangup');
+            btnHangup.onclick = () => {
+                if (confirm(`هل أنت متأكد من إنهاء المكالمة الجارية عن بُعد مع الرقم ${currentCall.number}؟`)) {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'EMERGENCY_HANGUP',
+                            room: currentCall.room || 'GSM-1001',
+                            timestamp: Date.now()
+                        }));
+                        addLogEntry(new Date().toLocaleTimeString('ar-EG', { hour12: false }), `تم إصدار أمر إنهاء المكالمة عن بُعد بواسطة لوحة التحكم`, 'warn');
+                        showToast("تم إرسال أمر إنهاء المكالمة عن بُعد بنجاح");
+                    }
+                }
+            };
+        } else {
+            interceptorCard.style.display = "none";
+            if (activeCallTimerInterval) {
+                clearInterval(activeCallTimerInterval);
+                activeCallTimerInterval = null;
+            }
+            activeCallStartTime = null;
+        }
+
+        // 2. RENDER ACTIVE GATEWAYS WITH HARDWARE STATS
+        availableGateways = data.gateways || [];
+        updateGatewayDropdown(availableGateways);
+
+        const container = document.getElementById('gatewaysContainer');
+        if (data.gateways && data.gateways.length > 0) {
+            container.innerHTML = '';
+            data.gateways.forEach(gw => {
+                const card = document.createElement('div');
+                card.className = 'gateway-item-card';
+
+                const isBusy = gw.isBusy;
+                const statusBadge = isBusy 
+                    ? `<span class="gw-status-badge gw-status-busy">🔴 مشغول بمكالمة</span>`
+                    : `<span class="gw-status-badge gw-status-idle">🟢 متاح للاتصال و SMS</span>`;
+
+                card.innerHTML = `
+                    <div class="gw-device-meta">
+                        <div class="gw-device-name">
+                            <span>📱 ${gw.name || 'هاتف وسيط GSM'}</span>
+                            <span class="gw-carrier-tag">${gw.carrier || 'GSM'}</span>
+                            ${gw.battery !== null && gw.battery !== undefined ? `<span style="font-size: 10px; color: #10B981; background: rgba(16, 185, 129, 0.15); padding: 1px 6px; border-radius: 4px; font-weight: bold;">🔋 ${gw.battery}%</span>` : ''}
+                            <span style="font-size: 10px; color: var(--accent-green); background: rgba(16, 185, 129, 0.15); padding: 1px 6px; border-radius: 4px;">📶 4G/5G LTE</span>
+                            <span style="font-size: 10px; color: #8B5CF6; background: rgba(139, 92, 246, 0.15); padding: 1px 6px; border-radius: 4px;">⚡ متصل 24/7 (Daemon)</span>
+                        </div>
+                        <div class="gw-room-id">
+                            الغرفة: <b>${gw.room}</b> | المعرف: <code>${gw.id}</code> | الوضع: <b>🔇 الصمت الكامل (Silent)</b>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${statusBadge}
+                        <button class="btn-call-gw" style="background: var(--accent-blue);" onclick="selectGatewayForSms('${gw.id}')" title="تحديد هذا الهاتف لإرسال رسائل SMS">
+                            رسالة SMS 💬
+                        </button>
+                        <a href="/terminal?room=${encodeURIComponent(gw.room)}&gw=${encodeURIComponent(gw.id)}" target="_blank" class="btn-call-gw" title="فتح الهاتف الطرفي وتمرير المكالمة عبر هذا الوسيط">
+                            تمرير مكالمة 📞
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = `
+                <div class="empty-placeholder">
+                    <div class="empty-icon">📱</div>
+                    <div>لا توجد هواتف وسيطة متصلة حالياً</div>
+                    <div style="font-size: 11px;">شغّل تطبيق الأندرويد على هاتف الوسيط واضغط على "بدء خدمة الوسيط" ليظهر هنا فوراً.</div>
+                </div>
+            `;
+        }
+
+        // 3. RENDER TERMINALS & EXTENSIONS
+        const termContainer = document.getElementById('terminalsContainer');
+        const badgeTerminalsTotal = document.getElementById('badgeTerminalsTotal');
+        const terminals = data.terminals || [];
+        if (badgeTerminalsTotal) badgeTerminalsTotal.textContent = `${terminals.length} تحويلات`;
+
+        if (termContainer) {
+            if (terminals.length > 0) {
+                termContainer.innerHTML = '';
+                terminals.forEach(term => {
+                    const card = document.createElement('div');
+                    card.className = 'gateway-item-card';
+
+                    const isBusy = term.isBusy;
+                    const statusBadge = isBusy 
+                        ? `<span class="gw-status-badge gw-status-busy">🔴 مشغول بمكالمة</span>`
+                        : `<span class="gw-status-badge gw-status-idle">🟢 متاح للاتصال الداخلي</span>`;
+
+                    card.innerHTML = `
+                        <div class="gw-device-meta">
+                            <div class="gw-device-name">
+                                <span>📞 تحويلة: <b style="color: #10B981; font-family: 'JetBrains Mono', monospace; font-size: 16px;">${term.extension}</b></span>
+                                <span class="gw-carrier-tag" style="color: #38BDF8; border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">اتصال داخلي Intercom</span>
+                                ${isBusy ? `<span style="font-size: 10px; color: #EF4444; background: rgba(239, 68, 68, 0.15); padding: 1px 6px; border-radius: 4px;">متصل مع: ${term.currentCallNumber || 'مكالمة'}</span>` : ''}
+                            </div>
+                            <div class="gw-room-id">
+                                الغرفة: <b>${term.room || 'GSM-1001'}</b> | المعرف: <code>${term.id}</code> | الاسم: <b>${term.name || 'هاتف طرفي'}</b>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${statusBadge}
+                            <a href="/terminal?room=${encodeURIComponent(term.room || 'GSM-1001')}" target="_blank" class="btn-call-gw" style="background: linear-gradient(135deg, #10B981, #047857);" title="فتح الهاتف الطرفي">
+                                فتح الطرفي 📱
+                            </a>
+                        </div>
+                    `;
+                    termContainer.appendChild(card);
+                });
+            } else {
+                termContainer.innerHTML = `
+                    <div class="empty-placeholder">
+                        <div class="empty-icon">📞</div>
+                        <div>لا توجد هواتف طرفية متصلة حالياً</div>
+                        <div style="font-size: 11px;">افتح الهاتف الطرفي (Web Terminal) على أي جهاز لتسجيل تحويلة جديدة (#101, #102, ...).</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 4. MERGE SMS HISTORY
+        if (data.smsHistory && data.smsHistory.length > 0) {
+            mergeSmsHistory(data.smsHistory);
+        }
+
+        updateRealtimeCharts(audioPackets);
+    }
+
+    function updateGatewayDropdown(gateways) {
+        const select = document.getElementById('smsSelectGateway');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">-- الوسيط التلقائي (الأول المتاح) --</option>';
+        gateways.forEach(gw => {
+            const opt = document.createElement('option');
+            opt.value = gw.id;
+            opt.textContent = `📱 ${gw.name} (${gw.carrier || 'GSM'}) [${gw.id}]`;
+            select.appendChild(opt);
+        });
+        if (currentVal && select.querySelector(`option[value="${currentVal}"]`)) {
+            select.value = currentVal;
+        }
+    }
+
+    function selectGatewayForSms(gatewayId) {
+        switchDashboardTab('sms');
+        const select = document.getElementById('smsSelectGateway');
+        if (select) {
+            select.value = gatewayId;
+        }
+        document.getElementById('smsRecipientInput').focus();
+    }
+
+    // =========================================================================
+    // SMS MANAGEMENT LOGIC (FEED, SEND, FILTER)
+    // =========================================================================
+    function mergeSmsHistory(newItems) {
+        newItems.forEach(item => {
+            const idx = allSmsMessages.findIndex(m => m.id === item.id);
+            if (idx === -1) {
+                allSmsMessages.push(item);
+            } else {
+                allSmsMessages[idx] = Object.assign(allSmsMessages[idx], item);
+            }
+        });
+        allSmsMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        renderSmsFeed();
+    }
+
+    function setSmsFilter(filter, btn) {
+        currentSmsFilter = filter;
+        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderSmsFeed();
+    }
+
+    function renderSmsFeed() {
+        const feedContainer = document.getElementById('smsFeedContainer');
+        const searchVal = (document.getElementById('smsSearchInput').value || '').trim().toLowerCase();
+
+        let filtered = allSmsMessages.filter(msg => {
+            if (currentSmsFilter === 'INBOX' && msg.direction !== 'INCOMING') return false;
+            if (currentSmsFilter === 'OUTBOX' && msg.direction !== 'OUTGOING') return false;
+            if (searchVal) {
+                const targetPhone = (msg.recipient || msg.sender || '').toLowerCase();
+                const text = (msg.body || '').toLowerCase();
+                if (!targetPhone.includes(searchVal) && !text.includes(searchVal)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            feedContainer.innerHTML = `
+                <div class="empty-placeholder">
+                    <div class="empty-icon">💬</div>
+                    <div>لا توجد رسائل مطابقة للفلتر</div>
+                    <div style="font-size: 11px;">يمكنك كتابة رسالة وإرسالها بالنموذج على اليمين.</div>
+                </div>
+            `;
+            return;
+        }
+
+        feedContainer.innerHTML = '';
+        filtered.forEach(msg => {
+            const card = document.createElement('div');
+            const isIncoming = msg.direction === 'INCOMING';
+            card.className = `sms-msg-card ${isIncoming ? 'incoming' : 'outgoing'}`;
+
+            const phone = isIncoming ? (msg.sender || 'غير معروف') : (msg.recipient || 'غير محدد');
+            const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('ar-EG', { hour12: true, hour: 'numeric', minute: '2-digit' }) : '--';
+            const dateStr = msg.timestamp ? new Date(msg.timestamp).toLocaleDateString('ar-EG', { month: 'numeric', day: 'numeric' }) : '';
+
+            let statusPill = '';
+            if (isIncoming) {
+                statusPill = `<span class="sms-status-pill received">📥 مستلمة على الشريحة</span>`;
+            } else if (msg.status === 'SENT') {
+                statusPill = `<span class="sms-status-pill sent">✓ تم الإرسال بنجاح</span>`;
+            } else if (msg.status === 'PENDING') {
+                statusPill = `<span class="sms-status-pill pending">⏳ جاري الإرسال عبر الشريحة...</span>`;
+            } else {
+                statusPill = `<span class="sms-status-pill failed" title="${msg.error || 'فشل'}">❌ فشل الإرسال (${msg.error || 'خطأ'})</span>`;
+            }
+
+            card.innerHTML = `
+                <div class="sms-card-header">
+                    <div class="sms-direction-tag ${isIncoming ? 'incoming' : 'outgoing'}">
+                        <span>${isIncoming ? '📥 واردة من:' : '📤 صادرة إلى:'}</span>
+                        <span class="sms-phone-badge">${phone}</span>
+                    </div>
+                    <div>${statusPill}</div>
+                </div>
+                <div class="sms-body-text">${escapeHtml(msg.body || '')}</div>
+                <div class="sms-card-footer">
+                    <div>
+                        <span>📱 ${msg.gatewayName || 'هاتف وسيط GSM'}</span>
+                        <span style="margin: 0 4px;">•</span>
+                        <span>${dateStr} ${timeStr}</span>
+                    </div>
+                    ${isIncoming ? `<button class="btn-reply-sms" onclick="prepareReply('${phone}')">رد سريع ↩</button>` : ''}
+                </div>
+            `;
+            feedContainer.appendChild(card);
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function prepareReply(phoneNumber) {
+        document.getElementById('smsRecipientInput').value = phoneNumber;
+        document.getElementById('smsMessageInput').focus();
+    }
+
+    // Submit Send SMS
+    function submitSendSms() {
+        const recipientInput = document.getElementById('smsRecipientInput');
+        const messageInput = document.getElementById('smsMessageInput');
+        const selectGateway = document.getElementById('smsSelectGateway');
+        const alertBox = document.getElementById('smsSendAlert');
+        const btnSend = document.getElementById('btnSendSms');
+
+        const recipient = recipientInput.value.trim();
+        const body = messageInput.value.trim();
+        const targetGatewayId = selectGateway.value;
+
+        if (!recipient) {
+            showAlert(alertBox, 'يرجى كتابة رقم الهاتف المستلم أولاً!', 'red');
+            recipientInput.focus();
+            return;
+        }
+        if (!body) {
+            showAlert(alertBox, 'يرجى كتابة نص الرسالة المراد إرسالها!', 'red');
+            messageInput.focus();
+            return;
+        }
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            showAlert(alertBox, 'خطأ: الاتصال بالسحابة غير متاح حالياً!', 'red');
+            return;
+        }
+
+        btnSend.disabled = true;
+        btnSend.style.opacity = '0.6';
+        showAlert(alertBox, '⏳ جاري إرسال الرسالة إلى الهاتف الوسيط...', 'amber');
+
+        const smsId = 'sms_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
+        ws.send(JSON.stringify({
+            type: 'SMS_SEND_REQUEST',
+            targetGatewayId: targetGatewayId,
+            phoneNumber: recipient,
+            smsRecipient: recipient,
+            body: body,
+            smsBody: body,
+            smsId: smsId,
+            timestamp: Date.now()
+        }));
+
+        setTimeout(() => {
+            btnSend.disabled = false;
+            btnSend.style.opacity = '1';
+            showAlert(alertBox, '✓ تم إرسال الأمر للوسيط بنجاح! راقب حالة التسليم أدناه.', 'green');
+            messageInput.value = '';
+            document.getElementById('smsCharCounter').textContent = '0 / 70 حرف (1 SMS)';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        }, 600);
+    }
+
+    function showAlert(box, msg, color) {
+        box.style.display = 'block';
+        box.textContent = msg;
+        if (color === 'red') {
+            box.style.background = 'rgba(239, 68, 68, 0.2)';
+            box.style.border = '1px solid var(--accent-red)';
+            box.style.color = 'var(--accent-red)';
+        } else if (color === 'amber') {
+            box.style.background = 'rgba(245, 158, 11, 0.2)';
+            box.style.border = '1px solid var(--accent-amber)';
+            box.style.color = 'var(--accent-amber)';
+        } else {
+            box.style.background = 'rgba(16, 185, 129, 0.2)';
+            box.style.border = '1px solid var(--accent-green)';
+            box.style.color = 'var(--accent-green)';
+        }
+    }
+
+    // =========================================================================
+    // CHART.JS REAL-TIME TELECOM PERFORMANCE CHARTS
+    // =========================================================================
+    const maxDataPoints = 15;
+    const timeLabels = Array(maxDataPoints).fill('');
+
+    const ctxBitrate = document.getElementById('chartBitrate').getContext('2d');
+    const bitrateData = Array(maxDataPoints).fill(0);
+    const chartBitrate = new Chart(ctxBitrate, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'Bitrate (kbps)',
+                data: bitrateData,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 2,
+                pointBackgroundColor: '#10B981'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    min: 0,
+                    suggestedMax: 80,
+                    grid: { color: '#1E293B' },
+                    ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 10 } }
+                }
+            }
+        }
+    });
+
+    const ctxLatency = document.getElementById('chartLatency').getContext('2d');
+    const latencyData = Array(maxDataPoints).fill(30);
+    const chartLatency = new Chart(ctxLatency, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'Latency (ms)',
+                data: latencyData,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 2,
+                pointBackgroundColor: '#3B82F6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    min: 0,
+                    suggestedMax: 120,
+                    grid: { color: '#1E293B' },
+                    ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 10 } }
+                }
+            }
+        }
+    });
+
+    let lastPackets = 0;
+    let lastTime = Date.now();
+
+    function updateRealtimeCharts(totalAudioPackets) {
+        const now = Date.now();
+        const deltaSeconds = Math.max(0.5, (now - lastTime) / 1000);
+        const deltaPackets = Math.max(0, totalAudioPackets - lastPackets);
+        lastPackets = totalAudioPackets;
+        lastTime = now;
+
+        const currentBitrate = Math.round((deltaPackets * 1025 * 8) / (1000 * deltaSeconds));
+        document.getElementById('txtCurrentBitrate').textContent = `${currentBitrate} kbps`;
+        const interceptorBitrate = document.getElementById('interceptorBitrate');
+        if (interceptorBitrate) interceptorBitrate.textContent = `${currentBitrate} kbps`;
+
+        currentAudioActivity = deltaPackets > 0 ? 1 : 0;
+
+        const curTimeStr = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+        timeLabels.shift();
+        timeLabels.push(curTimeStr);
+
+        bitrateData.shift();
+        bitrateData.push(currentBitrate);
+        chartBitrate.update('none');
+
+        const simulatedLatency = Math.round(25 + Math.random() * 20);
+        document.getElementById('txtCurrentLatency').textContent = `${simulatedLatency} ms`;
+        latencyData.shift();
+        latencyData.push(simulatedLatency);
+        chartLatency.update('none');
+    }
+
+    // =========================================================================
+    // REAL-TIME SPECTRUM EQUALIZER ANALYZER
+    // =========================================================================
+    const spectrumCanvas = document.getElementById('canvasSpectrum');
+    const spectrumCtx = spectrumCanvas ? spectrumCanvas.getContext('2d') : null;
+    let spectrumBars = Array(26).fill(3);
+    let currentAudioActivity = 0;
+
+    function resizeSpectrum() {
+        if (!spectrumCanvas) return;
+        spectrumCanvas.width = spectrumCanvas.offsetWidth || 300;
+        spectrumCanvas.height = spectrumCanvas.offsetHeight || 100;
+    }
+    window.addEventListener('resize', resizeSpectrum);
+    setTimeout(resizeSpectrum, 300);
+
+    function drawSpectrum() {
+        if (spectrumCanvas && spectrumCtx) {
+            const width = spectrumCanvas.width;
+            const height = spectrumCanvas.height;
+            spectrumCtx.clearRect(0, 0, width, height);
+
+            const barCount = spectrumBars.length;
+            const gap = 3;
+            const barWidth = (width - (barCount - 1) * gap) / barCount;
+
+            for (let i = 0; i < barCount; i++) {
+                const target = currentAudioActivity > 0 
+                    ? (Math.sin(Date.now() * 0.009 + i * 0.45) * 0.45 + 0.5) * (height * 0.8) + (Math.random() * (height * 0.18))
+                    : (Math.sin(Date.now() * 0.002 + i * 0.2) * 2 + 4);
+
+                spectrumBars[i] += (target - spectrumBars[i]) * 0.3;
+
+                const x = i * (barWidth + gap);
+                const h = Math.max(3, spectrumBars[i]);
+                const y = height - h;
+
+                const grad = spectrumCtx.createLinearGradient(0, height, 0, y);
+                grad.addColorStop(0, '#10B981');
+                grad.addColorStop(0.55, '#3B82F6');
+                grad.addColorStop(1, '#60A5FA');
+
+                spectrumCtx.fillStyle = grad;
+                spectrumCtx.beginPath();
+                if (spectrumCtx.roundRect) {
+                    spectrumCtx.roundRect(x, y, barWidth, h, [2, 2, 0, 0]);
+                } else {
+                    spectrumCtx.rect(x, y, barWidth, h);
+                }
+                spectrumCtx.fill();
+            }
+        }
+        requestAnimationFrame(drawSpectrum);
+    }
+    drawSpectrum();
+
+    // Polling Telemetry Fallback
+    async function fetchTelemetry() {
+        try {
+            const res = await fetch('/api/telemetry');
+            if (res.ok) {
+                const data = await res.json();
+                applyTelemetry(data);
+                if (data.recentLogs && data.recentLogs.length > 0) {
+                    const logStream = document.getElementById('logStream');
+                    if (logStream && logStream.children.length === 0) {
+                        data.recentLogs.forEach(entry => {
+                            addLogEntry(entry.time, entry.msg, entry.type);
+                        });
+                    }
+                }
+            }
+        } catch (ignored) {}
+    }
+
+    // Connect WebSocket for Live Instant Updates
+    let ws;
+    function connectMonitorWs() {
+        try {
+            ws = new WebSocket(serverUrl);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    type: 'JOIN',
+                    role: 'MONITOR',
+                    room: 'ALL'
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'TELEMETRY_UPDATE') {
+                        applyTelemetry(msg.data);
+                    } else if (msg.type === 'AUDIT_LOG') {
+                        addLogEntry(msg.time, msg.message, msg.logType || 'info');
+                    } else if (msg.type === 'SMS_INCOMING') {
+                        mergeSmsHistory([msg.sms]);
+                        playNotificationChime();
+                        showToast(`📩 رسالة SMS واردة من: ${msg.sms.sender}`);
+                        const counter = document.getElementById('badgeSmsCount');
+                        if (counter) {
+                            counter.textContent = parseInt(counter.textContent || '0') + 1;
+                        }
+                    } else if (msg.type === 'SMS_UPDATE') {
+                        mergeSmsHistory([msg.sms]);
+                    } else if (msg.type === 'SMS_STATUS_UPDATE') {
+                        const target = allSmsMessages.find(m => m.id === msg.smsId);
+                        if (target) {
+                            target.status = msg.status;
+                            target.error = msg.error;
+                            renderSmsFeed();
+                        }
+                        if (msg.status === 'SENT') {
+                            showToast(`✓ تم إرسال رسالة SMS إلى (${msg.recipient}) بنجاح`);
+                        } else if (msg.status === 'FAILED') {
+                            showToast(`❌ فشل إرسال رسالة SMS إلى (${msg.recipient}): ${msg.error}`);
+                        }
+                    }
+                } catch (ignored) {}
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectMonitorWs, 3000);
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+        } catch (e) {
+            setTimeout(connectMonitorWs, 3000);
+        }
+    }
+
+    connectMonitorWs();
+    fetchTelemetry();
+    setInterval(fetchTelemetry, 2500);
+
+    // =========================================================================
+    // PWA SERVICE WORKER & INSTALL PROMPT
+    // =========================================================================
+    let deferredPromptDash = null;
+    const btnInstallPwaDash = document.getElementById('btnInstallPwaDash');
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('PWA ServiceWorker registered:', reg.scope))
+                .catch(err => console.log('PWA ServiceWorker registration failed:', err));
+        });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPromptDash = e;
+        if (btnInstallPwaDash) {
+            btnInstallPwaDash.style.display = 'inline-flex';
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPromptDash = null;
+        if (btnInstallPwaDash) btnInstallPwaDash.style.display = 'none';
+        showToast("🎉 تم تثبيت لوحة المراقبة (PWA) بنجاح!");
+    });
+
+    function triggerPwaInstall() {
+        if (deferredPromptDash) {
+            deferredPromptDash.prompt();
+            deferredPromptDash.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    showToast("✓ تم قبول تثبيت التطبيق على الشاشة الرئيسية");
+                }
+                deferredPromptDash = null;
+            });
+        } else {
+            alert("لتثبيت لوحة التحكم على شاشة هاتفك:\n- أندرويد (Chrome): اضغط على قائمة المتصفح (⋮) ثم 'إضافة إلى الشاشة الرئيسية' أو 'تثبيت التطبيق'.\n- آيفون (Safari): اضغط على زر المشاركة (Share ⎋) ثم 'إضافة إلى الصفحة الرئيسية (Add to Home Screen)'.");
+        }
+    }
+</script>
+
+</body>
+</html>

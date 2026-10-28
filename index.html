@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الهاتف الطرفي السحابي | GSM Cloud Web Terminal</title>
+    <!-- PWA Progressive Web App Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GSM Terminal">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090D16;
+            --card-dark: #131B2E;
+            --card-border: #22304F;
+            --accent-green: #10B981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-blue: #3B82F6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.25);
+            --accent-red: #EF4444;
+            --accent-amber: #F59E0B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --keypad-btn-bg: #1A2338;
+            --keypad-btn-hover: #263554;
+            --keypad-btn-active: #33466E;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        /* Smartphone Frame Container */
+        .terminal-container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-dark);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Header */
+        .header {
+            padding: 16px 20px;
+            background: rgba(19, 27, 46, 0.95);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #10B981, #047857);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 4px 12px var(--accent-green-glow);
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .header-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            transition: all 0.3s;
+        }
+
+        .status-dot.online {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .latency-text {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Gateway Meta Bar */
+        .gateway-bar {
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid var(--card-border);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .gw-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .gw-badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        /* Config Card (Collapsible) */
+        .config-card {
+            padding: 12px 16px;
+            background: #0E1626;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .input-field {
+            background: #172136;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-connect {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        .btn-connect.connected {
+            background: var(--accent-red);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+
+        /* Main Dialpad Section */
+        .dialpad-section {
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Phone Input Display */
+        .phone-display-wrap {
+            width: 100%;
+            background: #0E1626;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .phone-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            font-weight: 700;
+            direction: ltr;
+            text-align: right;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .btn-icon:hover {
+            color: var(--text-primary);
+        }
+
+        /* Keypad Grid */
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .key-btn {
+            background: var(--keypad-btn-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            height: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .key-btn:hover {
+            background: var(--keypad-btn-hover);
+            transform: translateY(-1px);
+        }
+
+        .key-btn:active {
+            background: var(--keypad-btn-active);
+            transform: scale(0.95);
+        }
+
+        .key-num {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        .key-sub {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+        }
+
+        /* Big Action Dial Button */
+        .btn-dial {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border: none;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 25px var(--accent-green-glow);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 6px;
+        }
+
+        .btn-dial:hover {
+            transform: scale(1.06);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-dial:active {
+            transform: scale(0.94);
+        }
+
+        /* IN-CALL ACTIVE SCREEN */
+        .incall-section {
+            padding: 16px 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-height: 380px;
+        }
+
+        .call-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            border: 2px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-green);
+            box-shadow: 0 0 30px var(--accent-green-glow);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .call-info {
+            text-align: center;
+        }
+
+        .call-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            direction: ltr;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .call-state {
+            font-size: 14px;
+            color: var(--accent-green);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .call-timer {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        /* Audio Oscilloscope Waveforms */
+        .waveform-box {
+            width: 100%;
+            background: #0E1626;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .waveform-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .waveform-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .waveform-canvas {
+            width: 100%;
+            height: 32px;
+            border-radius: 6px;
+            background: #090D16;
+        }
+
+        /* In-Call Controls */
+        .call-actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-call-control {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: var(--keypad-btn-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-call-control.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-hangup {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #EF4444, #B91C1C);
+            color: white;
+            border: none;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+            transition: all 0.2s;
+        }
+
+        .btn-hangup:hover {
+            transform: scale(1.08);
+        }
+
+        /* Incoming Call Modal */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(9, 13, 22, 0.95);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 24px;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 340px;
+            background: var(--card-dark);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            animation: bounceIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bounceIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .incoming-ring-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--accent-green);
+            margin: 0 auto 16px;
+            animation: ringing 1s infinite alternate;
+        }
+
+        @keyframes ringing {
+            0% { transform: rotate(-10deg) scale(1); }
+            100% { transform: rotate(10deg) scale(1.05); }
+        }
+
+        .incoming-title {
+            font-size: 15px;
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .incoming-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 8px 0;
+            direction: ltr;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .incoming-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .btn-accept {
+            flex: 1;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--accent-green);
+            color: black;
+            font-weight: 700;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-green-glow);
+        }
+
+        .btn-reject {
+            flex: 1;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--accent-red);
+            color: white;
+            font-weight: 700;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+        }
+
+        /* Bottom Activity Drawer */
+        .log-drawer {
+            border-top: 1px solid var(--card-border);
+            background: #0B0F19;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .log-entry.success { color: var(--accent-green); }
+        .log-entry.error { color: var(--accent-red); }
+        .log-entry.info { color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+
+<div class="terminal-container">
+    <!-- Top Header -->
+    <div class="header">
+        <div class="header-title-box">
+            <div class="logo-icon">🌐</div>
+            <div>
+                <div class="header-title">الهاتف الطرفي السحابي</div>
+                <div class="header-sub">GSM Cloud Web Terminal</div>
+            </div>
+        </div>
+        <div class="header-status">
+            <button id="btnInstallPwa" onclick="triggerPwaInstall()" style="display:none; cursor:pointer; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg, #3b82f6, #6366f1); padding:5px 10px; border-radius:8px; border:none; box-shadow:0 2px 8px rgba(59,130,246,0.35);">📲 تثبيت التطبيق</button>
+            <a href="/" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--accent-green); background:rgba(16,185,129,0.12); padding:5px 10px; border-radius:8px; border:1px solid rgba(16,185,129,0.25);">📊 لوحة المراقبة</a>
+            <div class="status-pill">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">غير متصل</span>
+            </div>
+            <span id="latencyText" class="latency-text">-- ms</span>
+        </div>
+    </div>
+
+    <!-- Terminal Extension & Identity Bar -->
+    <div class="terminal-identity-bar" style="background: rgba(30, 41, 59, 0.7); padding: 8px 16px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: var(--text-secondary);">📞 تحويلتك:</span>
+            <span id="myExtensionBadge" style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 800; color: #10B981; background: rgba(16, 185, 129, 0.15); padding: 2px 10px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">#101</span>
+            <button id="btnEditExtension" type="button" style="background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 11px; color: var(--text-primary);" title="تغيير رقم تحويلتك الداخلية">✏️ تعديل</button>
+        </div>
+        <div style="font-size: 11px; color: #38BDF8; display: flex; align-items: center; gap: 4px;">
+            <span>⚡ اتصال داخلي (Intercom)</span>
+        </div>
+    </div>
+
+    <!-- Gateway Info Bar -->
+    <div class="gateway-bar">
+        <div class="gw-info">
+            <span>الوسيط الخلوي:</span>
+            <span id="gwStatusText" style="color: var(--text-muted);">بانتظار الاقتران...</span>
+        </div>
+        <div id="gwCarrierBadge" class="gw-badge">SIM --</div>
+    </div>
+
+    <!-- Connection & Room Settings -->
+    <div class="config-card">
+        <div class="config-row">
+            <div class="input-group">
+                <span class="input-label">كود الاقتران / معرف الغرفة:</span>
+                <input type="text" id="roomIdInput" class="input-field" value="GSM-1001" placeholder="مثال: GSM-1001">
+            </div>
+            <button id="btnConnect" class="btn btn-connect">اتصال بالسحابة</button>
+        </div>
+        <div class="input-group" style="margin-top: 6px;">
+            <span class="input-label">عنوان خادم السحابة (WebSocket Broker):</span>
+            <input type="text" id="serverUrlInput" class="input-field" value="" style="font-size: 12px; font-family: monospace;">
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <button type="button" id="btnPresetOnline" class="btn" style="flex:1.2; padding:5px; font-size:10px; background:#047857; color:#FFFFFF; font-weight:bold;">🌐 Render Cloud</button>
+            <button type="button" id="btnPresetLocal" class="btn" style="flex:0.9; padding:5px; font-size:10px; background:#1E293B; color:#94A3B8;">💻 Local (5050)</button>
+            <button type="button" id="btnPresetWifi" class="btn" style="flex:0.9; padding:5px; font-size:10px; background:#1E293B; color:#94A3B8;">📱 Wi-Fi LAN</button>
+            <button type="button" id="btnTestAudioBrowser" class="btn" style="flex:1.1; padding:5px; font-size:10px; background:#2563EB; color:#FFFFFF; font-weight:bold;">🔊 فحص الصوت</button>
+        </div>
+        <!-- Multi-Gateway Selection Dropdown -->
+        <div class="input-group" style="margin-top: 8px;">
+            <span class="input-label" style="color: var(--accent-green); font-weight: 700;">اختيار الهاتف الوسيط لتمرير المكالمة (GSM Gateway):</span>
+            <select id="gatewaySelect" class="input-field" style="font-size: 13px; font-weight: 600; background: #080C14; color: var(--text-primary); border: 1px solid var(--accent-green); cursor: pointer;">
+                <option value="">بانتظار اكتشاف الهواتف الوسيطة المتصلة...</option>
+            </select>
+        </div>
+        <!-- Intercom Extension Directory (Other connected terminals) -->
+        <div id="intercomDirectoryCard" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 14px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 12px; font-weight: 700; color: #38BDF8;">📞 تحويلات الهواتف الطرفية المتصلة (اتصال داخلي مباشر):</span>
+                <span id="onlineTerminalsCountBadge" style="font-size: 10px; font-weight: 700; background: rgba(56, 189, 248, 0.2); color: #38BDF8; padding: 2px 8px; border-radius: 10px;">0 متاح</span>
+            </div>
+            <div id="intercomChipsContainer" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; align-items: center;">
+                <span style="font-size: 11px; color: var(--text-muted);">لا توجد هواتف طرفية أخرى متصلة حالياً. يمكنك فتح الرابط على جهاز آخر برقم تحويلة مختلف (مثلاً #102).</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIALPAD SECTION -->
+    <div id="dialpadSection" class="dialpad-section">
+        <div class="phone-display-wrap">
+            <button id="btnClear" class="btn-icon" title="مسح الكل">✕</button>
+            <input type="text" id="phoneInput" class="phone-input" placeholder="أدخل الرقم..." autofocus>
+            <button id="btnBackspace" class="btn-icon" title="حذف">⌫</button>
+        </div>
+
+        <div class="keypad-grid">
+            <div class="key-btn" data-key="1">
+                <span class="key-num">1</span>
+                <span class="key-sub">&nbsp;</span>
+            </div>
+            <div class="key-btn" data-key="2">
+                <span class="key-num">2</span>
+                <span class="key-sub">ABC</span>
+            </div>
+            <div class="key-btn" data-key="3">
+                <span class="key-num">3</span>
+                <span class="key-sub">DEF</span>
+            </div>
+            <div class="key-btn" data-key="4">
+                <span class="key-num">4</span>
+                <span class="key-sub">GHI</span>
+            </div>
+            <div class="key-btn" data-key="5">
+                <span class="key-num">5</span>
+                <span class="key-sub">JKL</span>
+            </div>
+            <div class="key-btn" data-key="6">
+                <span class="key-num">6</span>
+                <span class="key-sub">MNO</span>
+            </div>
+            <div class="key-btn" data-key="7">
+                <span class="key-num">7</span>
+                <span class="key-sub">PQRS</span>
+            </div>
+            <div class="key-btn" data-key="8">
+                <span class="key-num">8</span>
+                <span class="key-sub">TUV</span>
+            </div>
+            <div class="key-btn" data-key="9">
+                <span class="key-num">9</span>
+                <span class="key-sub">WXYZ</span>
+            </div>
+            <div class="key-btn" data-key="*">
+                <span class="key-num">*</span>
+                <span class="key-sub">&nbsp;</span>
+            </div>
+            <div class="key-btn" data-key="0" data-long="+">
+                <span class="key-num">0</span>
+                <span class="key-sub">+</span>
+            </div>
+            <div class="key-btn" data-key="#">
+                <span class="key-num">#</span>
+                <span class="key-sub">&nbsp;</span>
+            </div>
+        </div>
+
+        <button id="btnDial" class="btn-dial" title="اتصال عبر شريحة الوسيط">📞</button>
+    </div>
+
+    <!-- IN-CALL ACTIVE SECTION -->
+    <div id="incallSection" class="incall-section">
+        <div class="call-avatar" style="width: 72px; height: 72px; font-size: 28px;">📞</div>
+        <div class="call-info">
+            <div id="inCallNumber" class="call-number">+966500000000</div>
+            <div id="inCallState" class="call-state">جاري الاتصال عبر الشريحة...</div>
+            <div id="inCallTimer" class="call-timer">00:00</div>
+        </div>
+
+        <!-- 1. CALL ACTIONS ROW (PROMINENT & IMMEDIATELY VISIBLE AT EYE LEVEL) -->
+        <div class="call-actions-row" style="margin: 6px 0 10px 0;">
+            <button id="btnMute" class="btn-call-control" title="كتم الميكروفون">
+                <svg id="svgMic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+            </button>
+            <button id="btnHangup" class="btn-hangup" title="إنهاء المكالمة">✕</button>
+            <button id="btnSpeaker" class="btn-call-control active" title="مكبر الصوت">
+                <svg id="svgSpeaker" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 2. Real-time Oscilloscope Waveforms (Compact) -->
+        <div class="waveform-box" style="padding: 10px 14px; gap: 6px;">
+            <div class="waveform-row">
+                <div class="waveform-label">
+                    <span>صوت المكالمة الخلوية (GSM الوارد):</span>
+                    <span id="rxDbText">-- dB</span>
+                </div>
+                <canvas id="canvasRx" class="waveform-canvas" style="height: 28px;"></canvas>
+            </div>
+            <div class="waveform-row">
+                <div class="waveform-label">
+                    <span>صوت ميكروفونك (الصادر للوسيط):</span>
+                    <span id="txDbText">-- dB</span>
+                </div>
+                <canvas id="canvasTx" class="waveform-canvas" style="height: 28px;"></canvas>
+            </div>
+        </div>
+
+        <!-- 3. Real-time Call Event Telemetry Card (AT THE BOTTOM) -->
+        <div style="width: 100%; background: #070B14; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 10px 14px; text-align: right; margin-top: 4px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--accent-green); margin-bottom: 4px;">📡 الأحداث وحالة الاتصال الفعلية المباشرة:</div>
+            <div id="telemetryEvents" style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); line-height: 1.5; max-height: 70px; overflow-y: auto;">
+                <div>[جاهز] بانتظار بدء المكالمة...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INCOMING CALL MODAL -->
+    <div id="incomingModal" class="modal-overlay">
+        <div class="modal-card">
+            <div id="incomingRingIcon" class="incoming-ring-icon">📲</div>
+            <div id="incomingModalTitle" class="incoming-title">مكالمة واردة!</div>
+            <div id="incomingCallerNumber" class="incoming-number">+966501234567</div>
+            <div id="incomingCallerSub" style="font-size: 12px; color: var(--text-secondary);">يرن الهاتف الآن...</div>
+            <div class="incoming-actions">
+                <button id="btnRejectCall" class="btn-reject">رفض ✕</button>
+                <button id="btnAcceptCall" class="btn-accept">رد (قبول) ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log Drawer -->
+    <div id="logDrawer" class="log-drawer">
+        <div class="log-entry info">[نظام الطرفي] جاهز للاتصال بالسحابة...</div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // PROTOCOL CONSTANTS
+    // =========================================================================
+    const PROTOCOL = {
+        TYPE_JOIN: "JOIN",
+        TYPE_PEER_JOINED: "PEER_JOINED",
+        TYPE_GATEWAY_LIST: "GATEWAY_LIST",
+        TYPE_GATEWAY_INFO: "GATEWAY_INFO",
+        TYPE_DIAL_REQUEST: "DIAL_REQUEST",
+        TYPE_INCOMING_CALL: "INCOMING_CALL",
+        TYPE_ANSWER_CALL: "ANSWER_CALL",
+        TYPE_HANGUP_CALL: "HANGUP_CALL",
+        TYPE_CALL_STATE: "CALL_STATE",
+        TYPE_PING: "PING",
+        TYPE_PONG: "PONG",
+        ROLE_TERMINAL: "TERMINAL",
+        ROLE_GATEWAY: "GATEWAY",
+        CALL_IDLE: "IDLE",
+        CALL_DIALING: "DIALING",
+        CALL_RINGING: "RINGING",
+        CALL_BUSY: "BUSY",
+        CALL_REJECTED: "REJECTED",
+        CALL_NO_ANSWER: "NO_ANSWER",
+        CALL_CONNECTED: "CONNECTED",
+        CALL_ENDED: "ENDED"
+    };
+
+    // =========================================================================
+    // STATE VARIABLES
+    // =========================================================================
+    let ws = null;
+    let isConnected = false;
+    let isGatewayOnline = false;
+    let isInCall = false;
+    let isMuted = false;
+    let callTimerInterval = null;
+    let callDurationSec = 0;
+    let pingInterval = null;
+    let lastPingTimestamp = 0;
+
+    // Web Audio Pipeline
+    let audioContext = null;
+    let micStream = null;
+    let micSource = null;
+    let micProcessor = null;
+    let rxAudioQueue = [];
+    let isPlayingAudio = false;
+    let rxGainNode = null;
+
+    // Visualizer Animators
+    let txAnalyser = null;
+    let rxAnalyser = null;
+    let animFrameId = null;
+
+    // Elements
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const latencyText = document.getElementById('latencyText');
+    const gwStatusText = document.getElementById('gwStatusText');
+    const gwCarrierBadge = document.getElementById('gwCarrierBadge');
+    const gatewaySelect = document.getElementById('gatewaySelect');
+    const roomIdInput = document.getElementById('roomIdInput');
+    const serverUrlInput = document.getElementById('serverUrlInput');
+    const btnConnect = document.getElementById('btnConnect');
+
+    const dialpadSection = document.getElementById('dialpadSection');
+    const incallSection = document.getElementById('incallSection');
+    const phoneInput = document.getElementById('phoneInput');
+    const btnBackspace = document.getElementById('btnBackspace');
+    const btnClear = document.getElementById('btnClear');
+    const btnDial = document.getElementById('btnDial');
+
+    const inCallNumber = document.getElementById('inCallNumber');
+    const inCallState = document.getElementById('inCallState');
+    const inCallTimer = document.getElementById('inCallTimer');
+    const telemetryEvents = document.getElementById('telemetryEvents');
+    const btnMute = document.getElementById('btnMute');
+    const btnSpeaker = document.getElementById('btnSpeaker');
+    const btnHangup = document.getElementById('btnHangup');
+
+    const incomingModal = document.getElementById('incomingModal');
+    const incomingModalTitle = document.getElementById('incomingModalTitle');
+    const incomingCallerNumber = document.getElementById('incomingCallerNumber');
+    const incomingCallerSub = document.getElementById('incomingCallerSub');
+    const incomingRingIcon = document.getElementById('incomingRingIcon');
+    const btnAcceptCall = document.getElementById('btnAcceptCall');
+    const btnRejectCall = document.getElementById('btnRejectCall');
+    const logDrawer = document.getElementById('logDrawer');
+
+    // Extension & Intercom Elements
+    let myExtension = localStorage.getItem('gsm_terminal_extension') || '#101';
+    const myExtensionBadge = document.getElementById('myExtensionBadge');
+    const btnEditExtension = document.getElementById('btnEditExtension');
+    const intercomChipsContainer = document.getElementById('intercomChipsContainer');
+    const onlineTerminalsCountBadge = document.getElementById('onlineTerminalsCountBadge');
+
+    if (myExtensionBadge) {
+        myExtensionBadge.textContent = myExtension;
+    }
+
+    if (btnEditExtension) {
+        btnEditExtension.addEventListener('click', () => {
+            const requested = prompt("أدخل رقم التحويلة الداخلية الخاصة بهذا الهاتف الطرفي (مثال: #101 أو #102 أو #103):", myExtension);
+            if (requested && requested.trim()) {
+                let norm = requested.trim();
+                if (!norm.startsWith('#')) norm = '#' + norm;
+                myExtension = norm;
+                localStorage.setItem('gsm_terminal_extension', norm);
+                if (myExtensionBadge) myExtensionBadge.textContent = norm;
+                if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
+                    sendJson({
+                        type: 'UPDATE_EXTENSION',
+                        extension: norm,
+                        room: roomIdInput.value.trim()
+                    });
+                }
+                logEvent(`تم تحديد رقم تحويلتك: ${norm}`);
+            }
+        });
+    }
+
+    const canvasRx = document.getElementById('canvasRx');
+    const canvasTx = document.getElementById('canvasTx');
+    const ctxRx = canvasRx.getContext('2d');
+    const ctxTx = canvasTx.getContext('2d');
+
+    function logEvent(text) {
+        const time = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+        const line = `[${time}] ${text}`;
+        if (telemetryEvents) {
+            const div = document.createElement('div');
+            div.textContent = line;
+            telemetryEvents.insertBefore(div, telemetryEvents.firstChild);
+        }
+        log(text, "info");
+    }
+
+    // =========================================================================
+    // UNIFIED AUDIO CONTEXT & SYNTHESIS (100% Autoplay-Safe)
+    // =========================================================================
+    function getAudioContext() {
+        if (!audioContext || audioContext.state === 'closed') {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().catch(() => {});
+        }
+        return audioContext;
+    }
+
+    function getSynthContext() {
+        return getAudioContext();
+    }
+
+    // Auto-resume AudioContext on first user gesture anywhere on page
+    const unlockAudioGraph = () => {
+        const ctx = getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+        }
+    };
+    ['click', 'pointerdown', 'touchstart', 'touchend', 'keydown'].forEach(evt => {
+        document.addEventListener(evt, unlockAudioGraph, { passive: true });
+    });
+
+    const DTMF_FREQS = {
+        '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+        '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+        '7': [852, 1209], '8': [852, 1336], '9': [852, 1477],
+        '*': [941, 1209], '0': [941, 1336], '#': [941, 1477]
+    };
+
+    function playDTMF(digit) {
+        try {
+            const ctx = getSynthContext();
+            const freqs = DTMF_FREQS[digit];
+            if (!freqs) return;
+
+            const osc1 = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc1.frequency.value = freqs[0];
+            osc2.frequency.value = freqs[1];
+
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc1.start();
+            osc2.start();
+            osc1.stop(ctx.currentTime + 0.16);
+            osc2.stop(ctx.currentTime + 0.16);
+        } catch (e) {}
+    }
+
+    // Ringtone generator
+    let ringInterval = null;
+    function startRingtone() {
+        stopRingtone();
+        const playTone = () => {
+            try {
+                const ctx = getSynthContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.setValueAtTime(480, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.9);
+            } catch (e) {}
+        };
+        playTone();
+        ringInterval = setInterval(playTone, 2000);
+    }
+
+    function stopRingtone() {
+        if (ringInterval) {
+            clearInterval(ringInterval);
+            ringInterval = null;
+        }
+    }
+
+    // =========================================================================
+    // DIALPAD INTERACTION
+    // =========================================================================
+    document.querySelectorAll('.key-btn').forEach(btn => {
+        let pressTimer = null;
+        const key = btn.dataset.key;
+        const longKey = btn.dataset.long;
+
+        btn.addEventListener('click', () => {
+            playDTMF(key);
+            phoneInput.value += key;
+        });
+
+        if (longKey) {
+            btn.addEventListener('mousedown', () => {
+                pressTimer = setTimeout(() => {
+                    phoneInput.value = phoneInput.value.slice(0, -1) + longKey;
+                    playDTMF(key);
+                }, 600);
+            });
+            btn.addEventListener('mouseup', () => clearTimeout(pressTimer));
+            btn.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+            btn.addEventListener('touchstart', () => {
+                pressTimer = setTimeout(() => {
+                    phoneInput.value = phoneInput.value.slice(0, -1) + longKey;
+                    playDTMF(key);
+                }, 600);
+            });
+            btn.addEventListener('touchend', () => clearTimeout(pressTimer));
+        }
+    });
+
+    btnBackspace.addEventListener('click', () => {
+        phoneInput.value = phoneInput.value.slice(0, -1);
+    });
+
+    btnClear.addEventListener('click', () => {
+        phoneInput.value = '';
+    });
+
+    // Initialize default WebSocket URL based on Render cloud server
+    const ONLINE_CLOUD_WSS = 'wss://relay1-tdgn.onrender.com';
+    let defaultHost = ONLINE_CLOUD_WSS;
+    if (window.location.host && !window.location.host.includes('localhost') && !window.location.host.includes('127.0.0.1')) {
+        defaultHost = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host;
+    }
+    serverUrlInput.value = defaultHost;
+
+    // Check URL parameters for Room, Gateway, and Server
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramRoom = urlParams.get('room');
+    const paramGw = urlParams.get('gw');
+    const paramServer = urlParams.get('server');
+    if (paramRoom) roomIdInput.value = paramRoom;
+    if (paramServer) serverUrlInput.value = paramServer;
+
+    document.getElementById('btnPresetOnline').addEventListener('click', () => {
+        serverUrlInput.value = ONLINE_CLOUD_WSS;
+        log("تم تحديد خادم Render السحابي المباشر (relay1-tdgn.onrender.com)", "info");
+    });
+    document.getElementById('btnPresetLocal').addEventListener('click', () => {
+        serverUrlInput.value = 'ws://localhost:5050';
+        log("تم تحديد خادم الجهاز المحلي", "info");
+    });
+    document.getElementById('btnPresetWifi').addEventListener('click', () => {
+        const lanHost = window.location.hostname && !window.location.hostname.includes('trycloudflare') && !window.location.hostname.includes('render') ? window.location.hostname : '10.98.83.17';
+        serverUrlInput.value = 'ws://' + lanHost + ':5050';
+        log("تم تحديد خادم شبكة الواي فاي المحلي (" + serverUrlInput.value + ")", "info");
+    });
+
+    const btnTestAudio = document.getElementById('btnTestAudioBrowser');
+    if (btnTestAudio) {
+        btnTestAudio.addEventListener('click', () => {
+            const ctx = getAudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+            playDTMF('5');
+            setTimeout(() => playDTMF('8'), 160);
+            setTimeout(() => playDTMF('#'), 320);
+
+            // Also test live PCM streaming pipeline directly into laptop speaker
+            setTimeout(() => {
+                const sampleRate = 16000;
+                const duration = 0.4;
+                const numSamples = Math.floor(sampleRate * duration);
+                const testBuffer = new ArrayBuffer(1 + numSamples * 2);
+                const view = new DataView(testBuffer);
+                view.setUint8(0, 0x01); // PCM Audio packet identifier
+                for (let i = 0; i < numSamples; i++) {
+                    const t = i / sampleRate;
+                    const s = 0.5 * Math.sin(2 * Math.PI * 523 * t) + 0.5 * Math.sin(2 * Math.PI * 659 * t);
+                    const envelope = Math.max(0, 1 - t / duration);
+                    const val = Math.floor(s * envelope * 24000);
+                    view.setInt16(1 + i * 2, val, true);
+                }
+                handleIncomingAudio(testBuffer);
+            }, 450);
+
+            log("🔔 تم اختبار سماعة المتصفح ومسار الصوت الثنائي بنجاح! مكبر الصوت يعمل بوضوح.", "success");
+        });
+    }
+
+    let isManualDisconnect = false;
+    let reconnectTimer = null;
+
+    btnConnect.addEventListener('click', () => {
+        if (!isConnected) {
+            isManualDisconnect = false;
+            connectCloud();
+        } else {
+            isManualDisconnect = true;
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            disconnectCloud();
+        }
+    });
+
+    function connectCloud() {
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+
+        let url = serverUrlInput.value.trim();
+        if (!url || url.includes("echo.websocket.events")) {
+            url = defaultHost;
+            serverUrlInput.value = url;
+        }
+        const room = roomIdInput.value.trim() || "GSM-1001";
+
+        log(`جاري الاتصال بالسحابة: ${url} [الغرفة: ${room}]...`, "info");
+        btnConnect.disabled = true;
+
+        try {
+            ws = new WebSocket(url);
+            ws.binaryType = "arraybuffer";
+
+            ws.onopen = () => {
+                isConnected = true;
+                btnConnect.disabled = false;
+                btnConnect.textContent = "قطع الاتصال";
+                btnConnect.classList.add("connected");
+                statusDot.classList.add("online");
+                statusText.textContent = "متصل بالسحابة";
+                log("تم الاتصال بالوسيط السحابي بنجاح!", "success");
+
+                // Send JOIN message
+                const joinMsg = {
+                    type: PROTOCOL.TYPE_JOIN,
+                    room: room,
+                    role: PROTOCOL.ROLE_TERMINAL,
+                    extension: myExtension,
+                    timestamp: Date.now()
+                };
+                sendJson(joinMsg);
+
+                // Start periodic ping
+                startPing();
+            };
+
+            ws.onmessage = (event) => {
+                if (typeof event.data === "string") {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        handleControlMessage(msg);
+                    } catch (e) {
+                        console.error("Invalid JSON:", event.data);
+                    }
+                } else if (event.data instanceof Blob) {
+                    event.data.arrayBuffer().then(buf => handleIncomingAudio(buf)).catch(err => console.error("Blob decode error:", err));
+                } else if (event.data instanceof ArrayBuffer) {
+                    handleIncomingAudio(event.data);
+                }
+            };
+
+            ws.onclose = () => {
+                handleDisconnect("تم إغلاق الاتصال بالسحابة");
+            };
+
+            ws.onerror = (err) => {
+                handleDisconnect("حدث خطأ في الاتصال بالخادم");
+            };
+
+        } catch (e) {
+            handleDisconnect("استثناء الاتصال: " + e.message);
+        }
+    }
+
+    function disconnectCloud() {
+        stopPing();
+        if (ws) {
+            try { ws.close(); } catch (e) {}
+            ws = null;
+        }
+        handleDisconnect("تم قطع الاتصال يدوياً");
+    }
+
+    function scheduleAutoReconnect() {
+        if (isManualDisconnect) return;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        
+        reconnectTimer = setTimeout(() => {
+            if (!isConnected && !isManualDisconnect) {
+                log("🔄 إعادة الاتصال التلقائي بالسحابة (Auto-Reconnect)...", "info");
+                connectCloud();
+            }
+        }, 2500);
+    }
+
+    // Keep connection alive across mobile network switches and screen-on
+    window.addEventListener('online', () => {
+        log("🌐 تم استعادة اتصال الإنترنت بالهاتف/الجهاز", "success");
+        if (!isConnected && !isManualDisconnect) {
+            connectCloud();
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !isConnected && !isManualDisconnect) {
+            log("📱 استعادة نشاط الصفحة، التحقق من الاتصال بالسحابة...", "info");
+            connectCloud();
+        }
+    });
+
+    function handleDisconnect(reason) {
+        isConnected = false;
+        isGatewayOnline = false;
+        btnConnect.disabled = false;
+        btnConnect.textContent = isManualDisconnect ? "اتصال بالسحابة" : "إعادة الاتصال...";
+        btnConnect.classList.remove("connected");
+        statusDot.classList.remove("online");
+        statusText.textContent = isManualDisconnect ? "غير متصل" : "محاولة إعادة الاتصال...";
+        latencyText.textContent = "-- ms";
+        gwStatusText.textContent = "غير متصل";
+        gwStatusText.style.color = "var(--text-muted)";
+        gwCarrierBadge.textContent = "SIM --";
+        log(reason, "error");
+        stopCall();
+
+        if (!isManualDisconnect) {
+            scheduleAutoReconnect();
+        }
+    }
+
+    function sendJson(obj) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(obj));
+        }
+    }
+
+    function startPing() {
+        stopPing();
+        pingInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                lastPingTimestamp = performance.now();
+                sendJson({
+                    type: PROTOCOL.TYPE_PING,
+                    room: roomIdInput.value.trim(),
+                    timestamp: Date.now()
+                });
+            }
+        }, 10000);
+    }
+
+    function stopPing() {
+        if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+        }
+    }
+
+    // =========================================================================
+    // INCOMING PROTOCOL MESSAGES
+    // =========================================================================
+    function handleControlMessage(msg) {
+        if (!msg || !msg.type) return;
+
+        switch (msg.type) {
+            case 'TERMINAL_ASSIGNED':
+                myExtension = msg.extension || '#101';
+                localStorage.setItem('gsm_terminal_extension', myExtension);
+                if (myExtensionBadge) myExtensionBadge.textContent = myExtension;
+                logEvent(`تم تسجيل رقم تحويلتك بنجاح: ${myExtension}`);
+                break;
+
+            case 'TERMINAL_LIST':
+            case 'PEER_LISTS':
+                handlePeersList(msg);
+                break;
+
+            case PROTOCOL.TYPE_PING:
+                sendJson({ type: PROTOCOL.TYPE_PONG, room: roomIdInput.value.trim() });
+                break;
+
+            case PROTOCOL.TYPE_PONG:
+                if (lastPingTimestamp > 0) {
+                    const latency = Math.round(performance.now() - lastPingTimestamp);
+                    latencyText.textContent = `${latency} ms`;
+                }
+                break;
+
+            case PROTOCOL.TYPE_GATEWAY_LIST:
+                handleGatewayList(msg);
+                break;
+
+            case PROTOCOL.TYPE_GATEWAY_INFO:
+                isGatewayOnline = true;
+                gwStatusText.textContent = "متصل وجاهز للاتصال";
+                gwStatusText.style.color = "var(--accent-green)";
+                gwCarrierBadge.textContent = msg.carrier || "GSM SIM";
+                logEvent(`الوسيط متصل وجاهز للخدمة (${msg.carrier || "GSM"})`);
+                break;
+
+            case PROTOCOL.TYPE_INCOMING_CALL:
+                showIncomingModal(msg.phoneNumber, msg.isIntercom, msg.callerName);
+                break;
+
+            case PROTOCOL.TYPE_CALL_STATE:
+                if (msg.callState === PROTOCOL.CALL_DIALING) {
+                    inCallState.textContent = "جاري طلب الرقم...";
+                    inCallState.style.color = "var(--accent-blue)";
+                    inCallTimer.textContent = "جاري الطلب...";
+                    logEvent("جاري طلب الرقم...");
+                } else if (msg.callState === PROTOCOL.CALL_RINGING) {
+                    inCallState.textContent = msg.isIntercom ? "رنين... الهاتف الطرفي الآخر يرن الآن" : "رنين... الهاتف يرن لدى الطرف الآخر";
+                    inCallState.style.color = "var(--accent-amber)";
+                    inCallTimer.textContent = "رنين...";
+                    logEvent(msg.isIntercom ? "جاري رنين الهاتف الطرفي الآخر..." : "جاري رنين الهاتف الخلوي لدى الطرف المتصل به...");
+                } else if (msg.callState === PROTOCOL.CALL_BUSY) {
+                    const reason = msg.message || "الرقم مشغول حالياً (Line Busy)";
+                    inCallState.textContent = `${reason} 🔴`;
+                    inCallState.style.color = "var(--accent-red)";
+                    inCallTimer.textContent = "مشغول";
+                    logEvent(`تنبيه: ${reason}`);
+                    stopCallTimer();
+                    playBusyBeep();
+                    setTimeout(stopCall, 3500);
+                } else if (msg.callState === PROTOCOL.CALL_NO_ANSWER || msg.callState === PROTOCOL.CALL_REJECTED) {
+                    const reason = msg.message || "لم يتم الرد / تم رفض المكالمة";
+                    inCallState.textContent = `${reason} 🔴`;
+                    inCallState.style.color = "var(--accent-red)";
+                    inCallTimer.textContent = "لم يتم الرد";
+                    logEvent(`انتهى الاتصال: ${reason}`);
+                    stopCallTimer();
+                    setTimeout(stopCall, 3000);
+                } else if (msg.callState === PROTOCOL.CALL_CONNECTED) {
+                    inCallState.textContent = "المكالمة متصلة (جارية الآن) 🟢";
+                    inCallState.style.color = "var(--accent-green)";
+                    logEvent("المكالمة متصلة الآن! تم بدء عداد الوقت ونقل الصوت بجودة عالية.");
+                    startCallTimer();
+                } else if (msg.callState === PROTOCOL.CALL_ENDED) {
+                    logEvent("انتهت المكالمة وتم إغلاق الاتصال.");
+                    stopCall();
+                }
+                break;
+
+            case PROTOCOL.TYPE_HANGUP_CALL:
+                logEvent("تم استقبال أمر إنهاء المكالمة من الطرف الآخر.");
+                stopCall();
+                break;
+        }
+    }
+
+    function handlePeersList(msg) {
+        if (msg.gateways) handleGatewayList(msg);
+        const terminals = msg.terminals || [];
+        renderIntercomDirectory(terminals);
+    }
+
+    function renderIntercomDirectory(terminals) {
+        if (!intercomChipsContainer) return;
+        const otherTerminals = terminals.filter(t => t.extension !== myExtension);
+        if (onlineTerminalsCountBadge) {
+            onlineTerminalsCountBadge.textContent = `${otherTerminals.length} متاح`;
+        }
+
+        intercomChipsContainer.innerHTML = '';
+        if (otherTerminals.length === 0) {
+            intercomChipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--text-muted);">لا توجد هواتف طرفية أخرى متصلة حالياً. يمكنك فتح الرابط على جهاز آخر بنفس الغرفة برقم تحويلة مختلف (مثلاً #102).</span>';
+            return;
+        }
+
+        otherTerminals.forEach(t => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.style.cssText = `
+                display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+                border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
+                border: 1px solid ${t.isBusy ? '#EF4444' : '#10B981'};
+                background: ${t.isBusy ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)'};
+                color: ${t.isBusy ? '#FCA5A5' : '#6EE7B7'};
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                transition: all 0.2s;
+            `;
+            chip.innerHTML = `<span>📱</span><span>${t.extension}</span><span>${t.isBusy ? '🔴 مشغول' : '🟢 متاح'}</span>`;
+            chip.title = `اضغط لإدخال التحويلة ${t.extension} في لوحة الاتصال`;
+            chip.addEventListener('click', () => {
+                phoneInput.value = t.extension;
+                playDTMF('#');
+                logEvent(`تم اختيار التحويلة الداخلية: ${t.extension}`);
+            });
+            intercomChipsContainer.appendChild(chip);
+        });
+    }
+
+    function handleGatewayList(msg) {
+        const gateways = msg.gateways || [];
+        if (!gatewaySelect) return;
+        gatewaySelect.innerHTML = '';
+        if (gateways.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'لا يوجد هواتف وسيطة متصلة بالغرفة حالياً';
+            gatewaySelect.appendChild(opt);
+            isGatewayOnline = false;
+            gwStatusText.textContent = 'غير متصل';
+            gwStatusText.style.color = 'var(--text-muted)';
+            gwCarrierBadge.textContent = 'SIM --';
+            logEvent('تنبيه: لا يوجد هواتف وسيطة متصلة بالغرفة حالياً');
+        } else {
+            gateways.forEach((gw, idx) => {
+                const opt = document.createElement('option');
+                opt.value = gw.id;
+                const statusText = gw.isBusy ? '[مشغول 🔴]' : '[متاح 🟢]';
+                opt.textContent = `📱 ${gw.name || 'وسيط ' + (idx + 1)} (${gw.carrier || 'GSM'}) ${statusText}`;
+                if (paramGw && gw.id === paramGw) {
+                    opt.selected = true;
+                }
+                gatewaySelect.appendChild(opt);
+            });
+            isGatewayOnline = true;
+            const availableCount = gateways.filter(g => !g.isBusy).length;
+            gwStatusText.textContent = `الوسائط المتاحة: ${availableCount}`;
+            gwStatusText.style.color = 'var(--accent-green)';
+            gwCarrierBadge.textContent = gateways[0].carrier || 'GSM SIM';
+            logEvent(`تم اكتشاف ${gateways.length} هاتف وسيط في الغرفة (${availableCount} متاح)`);
+        }
+    }
+
+    // =========================================================================
+    // OUTGOING CALL INITIATION
+    // =========================================================================
+    btnDial.addEventListener('click', () => {
+        const number = phoneInput.value.trim();
+        if (!number) {
+            alert("يرجى إدخال رقم الهاتف أو رقم التحويلة (مثل #102) أولاً!");
+            return;
+        }
+
+        if (!isConnected) {
+            alert("يرجى الاتصال بالسحابة أولاً!");
+            return;
+        }
+
+        startOutgoingCall(number);
+    });
+
+    async function startOutgoingCall(number) {
+        const isIntercom = number.startsWith('#') || (/^\d{3}$/.test(number) && !number.startsWith('9') && !number.startsWith('0'));
+        const targetExt = number.startsWith('#') ? number : ('#' + number);
+
+        const targetGatewayId = gatewaySelect ? gatewaySelect.value : null;
+        let targetGatewayName = "تلقائي";
+        if (gatewaySelect && gatewaySelect.selectedIndex >= 0) {
+            targetGatewayName = gatewaySelect.options[gatewaySelect.selectedIndex].text;
+        }
+
+        if (isIntercom) {
+            logEvent(`📞 طلب اتصال داخلي (Intercom) بالتحويلة: ${targetExt}...`);
+        } else {
+            logEvent(`تم إرسال طلب الاتصال بالرقم ${number} عبر الوسيط: ${targetGatewayName}`);
+        }
+        logEvent("جاري فتح القناة الصوتية الثنائية المباشرة...");
+
+        sendJson({
+            type: PROTOCOL.TYPE_DIAL_REQUEST,
+            role: PROTOCOL.ROLE_TERMINAL,
+            room: roomIdInput.value.trim(),
+            phoneNumber: isIntercom ? targetExt : number,
+            isIntercom: isIntercom,
+            targetGatewayId: targetGatewayId,
+            callerExtension: myExtension,
+            timestamp: Date.now()
+        });
+
+        // Initialize Audio Hardware
+        await initAudioStream();
+
+        // Switch to In-Call Screen
+        isInCall = true;
+        dialpadSection.style.display = "none";
+        incallSection.style.display = "flex";
+        inCallNumber.textContent = isIntercom ? `تحويلة ${targetExt}` : number;
+        inCallState.textContent = isIntercom ? `جاري الاتصال بالتحويلة الداخلية (${targetExt})...` : `جاري طلب الرقم عبر الوسيط (${targetGatewayName})...`;
+        inCallState.style.color = "var(--accent-blue)";
+        inCallTimer.textContent = "جاري الطلب...";
+
+        startWaveformAnimation();
+    }
+
+    // =========================================================================
+    // INCOMING CALL HANDLING
+    // =========================================================================
+    function showIncomingModal(number, isIntercom = false, callerName = '') {
+        if (isIntercom) {
+            if (incomingRingIcon) incomingRingIcon.textContent = "📞";
+            if (incomingModalTitle) incomingModalTitle.textContent = "مكالمة داخلية مباشرة (Intercom)!";
+            incomingCallerNumber.textContent = number || "تحويلة غير معروفة";
+            if (incomingCallerSub) incomingCallerSub.textContent = callerName ? `من: ${callerName}` : `اتصال داخلي من التحويلة ${number}`;
+            logEvent(`📞 مكالمة داخلية واردة من التحويلة: ${number}`);
+        } else {
+            if (incomingRingIcon) incomingRingIcon.textContent = "📲";
+            if (incomingModalTitle) incomingModalTitle.textContent = "مكالمة GSM واردة عبر شريحة الوسيط!";
+            incomingCallerNumber.textContent = number || "رقم غير معروف";
+            if (incomingCallerSub) incomingCallerSub.textContent = "يرن هاتف الوسيط الآن...";
+            logEvent(`مكالمة خلوية واردة على شريحة الوسيط من: ${number || "رقم مجهول"}`);
+        }
+        incomingModal.style.display = "flex";
+        startRingtone();
+    }
+
+    btnAcceptCall.addEventListener('click', async () => {
+        stopRingtone();
+        incomingModal.style.display = "none";
+
+        const number = incomingCallerNumber.textContent;
+        logEvent("قبول المكالمة وبدء بث الصوت الثنائي...");
+
+        sendJson({
+            type: PROTOCOL.TYPE_ANSWER_CALL,
+            room: roomIdInput.value.trim(),
+            timestamp: Date.now()
+        });
+
+        await initAudioStream();
+
+        isInCall = true;
+        dialpadSection.style.display = "none";
+        incallSection.style.display = "flex";
+        inCallNumber.textContent = number;
+        inCallState.textContent = "المكالمة متصلة - جاري بث الصوت الحقيقي";
+        inCallState.style.color = "var(--accent-green)";
+
+        startCallTimer();
+        startWaveformAnimation();
+    });
+
+    btnRejectCall.addEventListener('click', () => {
+        stopRingtone();
+        incomingModal.style.display = "none";
+        logEvent("تم رفض المكالمة الواردة.");
+
+        sendJson({
+            type: PROTOCOL.TYPE_HANGUP_CALL,
+            room: roomIdInput.value.trim(),
+            role: PROTOCOL.ROLE_TERMINAL,
+            timestamp: Date.now()
+        });
+    });
+
+    // =========================================================================
+    // IN-CALL CONTROLS
+    // =========================================================================
+    btnHangup.addEventListener('click', () => {
+        logEvent("تم إنهاء المكالمة من جانبك.");
+        sendJson({
+            type: PROTOCOL.TYPE_HANGUP_CALL,
+            room: roomIdInput.value.trim(),
+            role: PROTOCOL.ROLE_TERMINAL,
+            timestamp: Date.now()
+        });
+        stopCall();
+    });
+
+    btnMute.addEventListener('click', () => {
+        isMuted = !isMuted;
+        btnMute.classList.toggle('active', isMuted);
+        btnMute.innerHTML = isMuted ?
+            `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>` :
+            `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>`;
+        logEvent(isMuted ? "تم كتم الميكروفون" : "تم إلغاء كتم الميكروفون");
+    });
+
+    btnSpeaker.addEventListener('click', () => {
+        if (rxGainNode) {
+            const isHigh = rxGainNode.gain.value > 1.0;
+            rxGainNode.gain.value = isHigh ? 1.0 : 2.5;
+            btnSpeaker.classList.toggle('active', !isHigh);
+            btnSpeaker.innerHTML = !isHigh ?
+                `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>` :
+                `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                </svg>`;
+            logEvent(!isHigh ? "تم تضخيم مكبر الصوت (250%)" : "مستوى مكبر الصوت عادي (100%)");
+        }
+    });
+
+    function playBusyBeep() {
+        try {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioContext.state === 'suspended') audioContext.resume();
+            const now = audioContext.currentTime;
+            for (let i = 0; i < 4; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(425, now + i * 0.5);
+                gain.gain.setValueAtTime(0.25, now + i * 0.5);
+                gain.gain.setValueAtTime(0, now + i * 0.5 + 0.25);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start(now + i * 0.5);
+                osc.stop(now + i * 0.5 + 0.3);
+            }
+        } catch (ignored) {}
+    }
+
+    function startCallTimer() {
+        stopCallTimer();
+        callDurationSec = 0;
+        inCallTimer.textContent = "00:00";
+        callTimerInterval = setInterval(() => {
+            callDurationSec++;
+            const mins = String(Math.floor(callDurationSec / 60)).padStart(2, '0');
+            const secs = String(callDurationSec % 60).padStart(2, '0');
+            inCallTimer.textContent = `${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function stopCallTimer() {
+        if (callTimerInterval) {
+            clearInterval(callTimerInterval);
+            callTimerInterval = null;
+        }
+    }
+
+    function stopCall() {
+        isInCall = false;
+        stopCallTimer();
+        stopRingtone();
+        incomingModal.style.display = "none";
+        incallSection.style.display = "none";
+        dialpadSection.style.display = "flex";
+        closeAudioStream();
+        cancelAnimationFrame(animFrameId);
+    }
+
+    // =========================================================================
+    // REAL-TIME AUDIO PIPELINE (16kHz 16-bit PCM Bi-directional)
+    // =========================================================================
+    async function initAudioStream() {
+        try {
+            audioContext = getAudioContext();
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+
+            // Reset jitter buffer clock for newly initialized call
+            nextPlayTime = 0;
+
+            // Analysers for VU Oscilloscopes
+            if (!txAnalyser) {
+                txAnalyser = audioContext.createAnalyser();
+                txAnalyser.fftSize = 64;
+            }
+            if (!rxAnalyser) {
+                rxAnalyser = audioContext.createAnalyser();
+                rxAnalyser.fftSize = 64;
+            }
+
+            if (!rxGainNode) {
+                rxGainNode = audioContext.createGain();
+            }
+            // 2.5x gain boost so laptop speakers are loud and crystal clear
+            rxGainNode.gain.value = 2.5;
+            try { rxGainNode.disconnect(); } catch (e) {}
+            rxGainNode.connect(rxAnalyser);
+            try { rxAnalyser.disconnect(); } catch (e) {}
+            rxAnalyser.connect(audioContext.destination);
+
+            // Access User Microphone with Echo Cancellation
+            micStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    channelCount: 1
+                }
+            });
+
+            micSource = audioContext.createMediaStreamSource(micStream);
+            micProcessor = audioContext.createScriptProcessor(1024, 1, 1);
+
+            // High-Performance Anti-Aliasing Linear Interpolator Resampler
+            // Converts browser hardware rate (48000Hz / 44100Hz) to pure 16000Hz Telecom Audio
+            function downsampleTo16k(inputData, inputSampleRate) {
+                if (!inputData || inputData.length === 0) return new Float32Array(0);
+                if (inputSampleRate === 16000) return inputData;
+
+                const ratio = inputSampleRate / 16000;
+                const newLength = Math.round(inputData.length / ratio);
+                const result = new Float32Array(newLength);
+
+                for (let i = 0; i < newLength; i++) {
+                    const srcIdx = i * ratio;
+                    const idxFloor = Math.floor(srcIdx);
+                    const idxCeil = Math.min(idxFloor + 1, inputData.length - 1);
+                    const fraction = srcIdx - idxFloor;
+                    result[i] = inputData[idxFloor] * (1 - fraction) + inputData[idxCeil] * fraction;
+                }
+                return result;
+            }
+
+            micProcessor.onaudioprocess = (e) => {
+                if (!isInCall || isMuted || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+                const inputData = e.inputBuffer.getChannelData(0);
+                const downsampled = downsampleTo16k(inputData, audioContext.sampleRate);
+                if (downsampled.length === 0) return;
+
+                // Convert Float32 to Int16 PCM (Standard 16kHz Wideband Telecom Format)
+                const pcmBuffer = new ArrayBuffer(downsampled.length * 2 + 1);
+                const pcmView = new DataView(pcmBuffer);
+                pcmView.setUint8(0, 0x01); // Audio identifier byte
+
+                for (let i = 0; i < downsampled.length; i++) {
+                    let s = Math.max(-1, Math.min(1, downsampled[i]));
+                    let val = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    pcmView.setInt16(1 + i * 2, val, true); // Little endian
+                }
+
+                ws.send(pcmBuffer);
+            };
+
+            micSource.connect(txAnalyser);
+            txAnalyser.connect(micProcessor);
+
+            // CRITICAL FIX FOR LAPTOP SPEAKER SILENCE:
+            // DO NOT connect micProcessor directly to audioContext.destination!
+            // Direct destination connection feeds mic into speakers, triggering Windows AEC hardware mute.
+            // Connecting via dummyMuteGain (gain=0) satisfies Chrome's audio processing pump with ZERO speaker mute.
+            const dummyMuteGain = audioContext.createGain();
+            dummyMuteGain.gain.value = 0;
+            micProcessor.connect(dummyMuteGain);
+            dummyMuteGain.connect(audioContext.destination);
+
+            log("تم تشغيل محرك الصوت ثنائي الاتجاه بنجاح (16kHz HD Telecom)!", "success");
+
+        } catch (err) {
+            log("خطأ في تشغيل الميكروفون: " + err.message, "error");
+        }
+    }
+
+    let nextPlayTime = 0;
+    let isAudioTestNoticeShown = false;
+
+    function handleIncomingAudio(arrayBuffer) {
+        if (!isInCall) return; // Strict guard: never play audio when idle / not on call
+        if (!arrayBuffer || arrayBuffer.byteLength <= 1) return;
+
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+        }
+
+        const dataView = new DataView(arrayBuffer);
+        const header = dataView.getUint8(0);
+        if (header !== 0x01) return; // Audio packet check
+
+        const pcmSamples = (dataView.byteLength - 1) / 2;
+        if (pcmSamples <= 0) return;
+
+        const floatData = new Float32Array(pcmSamples);
+        for (let i = 0; i < pcmSamples; i++) {
+            const int16 = dataView.getInt16(1 + i * 2, true);
+            floatData[i] = int16 / 32768.0;
+        }
+
+        // Play audio chunk through AudioContext buffer source with scheduled Jitter Buffer
+        try {
+            // Web Audio resamples 16kHz PCM to hardware DAC rate (48kHz) in native C++ DSP
+            const audioBuffer = ctx.createBuffer(1, floatData.length, 16000);
+            audioBuffer.getChannelData(0).set(floatData);
+
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+
+            if (!rxGainNode) {
+                rxGainNode = ctx.createGain();
+                rxGainNode.gain.value = 2.5;
+                if (rxAnalyser) {
+                    rxGainNode.connect(rxAnalyser);
+                    rxAnalyser.connect(ctx.destination);
+                } else {
+                    rxGainNode.connect(ctx.destination);
+                }
+            } else {
+                rxGainNode.gain.value = 2.5;
+            }
+
+            source.connect(rxGainNode);
+
+            // Jitter buffer with strict drift correction (80ms max latency window):
+            const curTime = ctx.currentTime;
+            if (nextPlayTime < curTime || nextPlayTime > curTime + 0.08) {
+                nextPlayTime = curTime + 0.02; // 20ms low-latency offset
+            }
+            source.start(nextPlayTime);
+            nextPlayTime += audioBuffer.duration;
+
+            if (!isInCall && !isAudioTestNoticeShown) {
+                isAudioTestNoticeShown = true;
+                logEvent("🔊 جاري استقبال وسماع بث الصوت السحابي مباشرة!");
+            }
+        } catch (e) {
+            console.error("Playback error:", e);
+        }
+    }
+
+    function closeAudioStream() {
+        nextPlayTime = 0;
+        if (micStream) {
+            micStream.getTracks().forEach(track => track.stop());
+            micStream = null;
+        }
+        if (micProcessor) {
+            try { micProcessor.disconnect(); } catch (e) {}
+            micProcessor = null;
+        }
+        if (micSource) {
+            try { micSource.disconnect(); } catch (e) {}
+            micSource = null;
+        }
+        // Keep audioContext open so subsequent calls and playback never suffer from autoplay blocks or hardware re-init
+    }
+
+    // =========================================================================
+    // OSCILLOSCOPE CANVAS VISUALIZATION
+    // =========================================================================
+    function startWaveformAnimation() {
+        const drawWave = (analyser, canvas, ctx, color, dbElement) => {
+            const width = canvas.width = canvas.clientWidth;
+            const height = canvas.height = canvas.clientHeight;
+            ctx.clearRect(0, 0, width, height);
+
+            if (!analyser) return;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+
+            const sliceWidth = width / bufferLength;
+            let x = 0;
+            let sum = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = (v * height) / 2;
+                sum += Math.abs(dataArray[i] - 128);
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+
+                x += sliceWidth;
+            }
+
+            ctx.stroke();
+
+            // Calculate approximate dB for readout
+            const avg = sum / bufferLength;
+            const db = Math.round(20 * Math.log10((avg / 128) + 0.0001));
+            dbElement.textContent = avg > 2 ? `${Math.max(-60, db)} dB` : "-∞ dB";
+        };
+
+        const render = () => {
+            if (isInCall) {
+                drawWave(rxAnalyser, canvasRx, ctxRx, '#10B981', document.getElementById('rxDbText'));
+                drawWave(txAnalyser, canvasTx, ctxTx, '#3B82F6', document.getElementById('txDbText'));
+                animFrameId = requestAnimationFrame(render);
+            }
+        };
+
+        render();
+    }
+
+    // =========================================================================
+    // LOGGING HELPER
+    // =========================================================================
+    function log(text, type = "info") {
+        const time = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.textContent = `[${time}] ${text}`;
+        logDrawer.appendChild(entry);
+        logDrawer.scrollTop = logDrawer.scrollHeight;
+    }
+
+    // =========================================================================
+    // PWA (PROGRESSIVE WEB APP) SERVICE WORKER & INSTALL PROMPT
+    // =========================================================================
+    let deferredPrompt = null;
+    const btnInstallPwa = document.getElementById('btnInstallPwa');
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('PWA ServiceWorker registered:', reg.scope))
+                .catch(err => console.log('PWA ServiceWorker registration failed:', err));
+        });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (btnInstallPwa) {
+            btnInstallPwa.style.display = 'inline-flex';
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+        log("🎉 تم تثبيت تطبيق الويب (PWA) على هاتفك بنجاح!", "success");
+    });
+
+    function triggerPwaInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    log("✓ قبل المستخدم تثبيت التطبيق على الشاشة الرئيسية", "success");
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            alert("لتثبيت تطبيق الهاتف الطرفي على هاتفك:\n- أندرويد (Chrome): اضغط على خيارات المتصفح (⋮) ثم 'إضافة إلى الشاشة الرئيسية' أو 'تثبيت التطبيق'.\n- آيفون (Safari): اضغط على زر المشاركة (Share ⎋) ثم اختر 'إضافة إلى الصفحة الرئيسية (Add to Home Screen)'.");
+        }
+    }
+
+    // Auto-connect upon page load after 800ms
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (!isConnected && !isManualDisconnect) {
+                log("🚀 بدء الاتصال التلقائي بالسحابة...", "info");
+                connectCloud();
+            }
+        }, 800);
+    });
+</script>
+
+</body>
+</html>

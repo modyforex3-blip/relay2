@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحميل بوابة الاتصال الخلوي GSM Relay | VoxLink</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --accent-green-hover: #059669;
+            --accent-blue: #3b82f6;
+            --accent-amber: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 580px;
+            width: 100%;
+        }
+
+        .header-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .app-icon {
+            width: 76px;
+            height: 76px;
+            background: linear-gradient(135deg, #10b981, #047857);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.35);
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge.green {
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .download-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-primary:hover, .btn-primary:active {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #0f172a;
+            color: #93c5fd;
+            border: 1px solid #3b82f6;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .guide-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .guide-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .step-item {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #38bdf8;
+            font-weight: 800;
+            font-size: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .step-content .highlight {
+            color: #34d399;
+            font-weight: bold;
+        }
+
+        .step-content .warn {
+            color: #fca5a5;
+            font-weight: bold;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 20px;
+        }
+
+        .quick-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .quick-links a {
+            color: #38bdf8;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-card">
+            <div class="app-icon">📱</div>
+            <h1>بوابة الاتصال الخلوي (GSM Gateway)</h1>
+            <p class="subtitle">تطبيق تحويل هاتف الأندرويد إلى وسيط اتصالات وبث صوتي فائق الوضوح</p>
+            
+            <div class="badges">
+                <span class="badge green">🛡️ موقّع رقمياً v1+v2+v3</span>
+                <span class="badge green">📶 فحص تلقائي لاستقرار شبكة Wi-Fi و VoLTE</span>
+                <span class="badge">📦 الإصدار: v2.7.1 (جسر مكبر الصوت عالي الحساسية بدون كتم صدى + كشف ذكي وتعافي تلقائي لمصادر الصوت)</span>
+                <span class="badge">💾 الحجم: 5.09 MB</span>
+            </div>
+
+            <div class="download-actions">
+                <a href="/download/apk" class="btn btn-primary" id="btnDownload">
+                    <span>📥</span>
+                    <span>تحميل تطبيق الأندرويد المباشر (APK)</span>
+                </a>
+                
+                <a href="/download/zip" class="btn btn-secondary">
+                    <span>📦</span>
+                    <span>تحميل كملف مضغوط (ZIP) - في حال حظر المتصفح</span>
+                </a>
+            </div>
+
+            <div class="quick-links">
+                <a href="/">💻 فتح الهاتف الطرفي (Web Terminal)</a>
+                <span>•</span>
+                <a href="/dashboard">📊 لوحة التحكم الحية</a>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <div class="guide-title">
+                <span>🛡️</span>
+                <span>دليل تثبيت التطبيق وتجاوز معوقات الحماية في 30 ثانية:</span>
+            </div>
+
+            <div class="step-item" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px; padding: 12px;">
+                <div class="step-num" style="background: #ef4444; color: white;">!</div>
+                <div class="step-content">
+                    <h3 style="color: #fca5a5;">هام جداً: حذف النسخة القديمة قبل التثبيت</h3>
+                    <p>لتفادي خطأ <span class="warn">"لم يكتمل التثبيت"</span> على هواتف Honor و Huawei و Xiaomi، يجب <span class="highlight">إلغاء تثبيت (حذف) التطبيق القديم من الهاتف أولاً</span> ثم تثبيت هذه النسخة الجديدة مباشرة.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h3>تحذير المتصفح عند التنزيل (Chrome / Samsung Internet)</h3>
+                    <p>عند الضغط على تحميل، قد يظهر المتصفح تنبيهاً يقول: <span class="warn">"قد يكون الملف ضاراً"</span>.<br>
+                    👈 هذا أمر طبيعي جداً لأي تطبيق يحمّل من خارج متجر Play؛ اضغط على <span class="highlight">"تنزيل على أي حال" (Download anyway)</span>.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h3>لهواتف سامسونج الحديثة (Samsung One UI 6 / Android 14)</h3>
+                    <p>تكون ميزة <span class="warn">"الحظر التلقائي"</span> مفعلة تلقائياً لمنع التثبيت.<br>
+                    👈 اذهب إلى: <span class="highlight">الضبط (Settings) ⚙️ -> الأمان والخصوصية -> الحظر التلقائي (Auto Blocker) -> إيقاف مؤقت</span>.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h3>نافذة فحص جوجل (Google Play Protect)</h3>
+                    <p>إذا ظهرت نافذة تقول <span class="warn">"حظر بواسطة Play Protect"</span>:<br>
+                    👈 اضغط على كلمة <span class="highlight">"مزيد من التفاصيل" (More details)</span> بالأسفل، ثم اضغط <span class="highlight">"التثبيت على أي حال (غير آمن)" (Install anyway)</span>.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <h3>فتح التطبيق ومنح الصلاحيات</h3>
+                    <p>عند فتح التطبيق اضغط <span class="highlight">"متابعة ومنح الصلاحيات"</span> للموافقة على المكالمات والميكروفون ليعمل التطبيق بكفاءة 24/7 دون توقف.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-note">خادم الاتصالات السحابية الذكي • مشفر ومحمي 24/7</p>
+    </div>
+</body>
+</html>
