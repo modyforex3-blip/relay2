@@ -64,6 +64,18 @@ public class AudioRelayEngine {
     private long lastRxLevelTime = 0;
     private int consecutiveSilenceFrames = 0;
 
+    // Dynamic Echo Ducking & Anti-Feedback Voice Gate
+    private volatile long lastIncomingSpeechTime = 0;
+    private static final long ECHO_DUCKING_DURATION_MS = 380;
+
+    // 2-pole Telephony Bandpass Filter (300Hz - 3400Hz at 16kHz)
+    private float hpf_x1 = 0, hpf_x2 = 0, hpf_y1 = 0, hpf_y2 = 0;
+    private float lpf_x1 = 0, lpf_x2 = 0, lpf_y1 = 0, lpf_y2 = 0;
+    private static final float HPF_B0 = 0.9244f, HPF_B1 = -1.8488f, HPF_B2 = 0.9244f;
+    private static final float HPF_A1 = -1.8414f, HPF_A2 = 0.8562f;
+    private static final float LPF_B0 = 0.2452f, LPF_B1 = 0.4905f, LPF_B2 = 0.2452f;
+    private static final float LPF_A1 = -0.3765f, LPF_A2 = 0.3575f;
+
     public AudioRelayEngine(Context context) {
         this.context = context.getApplicationContext();
         this.audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
@@ -268,7 +280,7 @@ public class AudioRelayEngine {
                         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
                         audioManager.setSpeakerphoneOn(true);
                         int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-                        int targetVol = (int) (maxVol * 0.82f);
+                        int targetVol = (int) (maxVol * 0.75f);
                         audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, Math.max(1, targetVol), 0);
                         Log.i(TAG, "🔊 Smart Acoustic Loudspeaker Bridge active: speakerphone ON (vol=" + targetVol + "/" + maxVol + ")");
                     }
@@ -421,10 +433,25 @@ public class AudioRelayEngine {
                                 }
                             }
 
+                            // Dynamic Anti-Echo Ducking on Gateway:
+                            // When Terminal user is speaking into Gateway speaker, duck Gateway mic capture
+                            // to eliminate acoustic feedback howl and echo loop
+                            boolean isDucking = false;
+                            if (isGateway && (System.currentTimeMillis() - lastIncomingSpeechTime < ECHO_DUCKING_DURATION_MS)) {
+                                isDucking = true;
+                                attenuateBuffer(buffer, bytesRead, 0.06f); // -24dB ducking
+                            }
+
+                            // Telephony Bandpass Filter (300Hz - 3400Hz):
+                            // Removes mechanical chassis vibrations (<300Hz) and high-pitch feedback (>3400Hz)
+                            if (isGateway && !isDucking) {
+                                applyTelephonyBandpassFilter(buffer, bytesRead);
+                            }
+
                             // Apply Adaptive Automatic Gain Control in Private Mode, or static digital boost with soft limiter
                             if (isGateway && (isPrivateRelay || isSilentGateway)) {
                                 applyAdaptiveGain(buffer, bytesRead);
-                            } else if (digitalGain > 1.01f) {
+                            } else if (digitalGain > 1.01f && !isDucking) {
                                 applyGain(buffer, bytesRead, digitalGain);
                             }
 
@@ -521,6 +548,46 @@ public class AudioRelayEngine {
             case MediaRecorder.AudioSource.CAMCORDER: return "CAMCORDER (Secondary Mic #5)";
             case MediaRecorder.AudioSource.MIC: return "MIC (Primary Mic #1)";
             default: return "Source(" + source + ")";
+        }
+    }
+
+    private void attenuateBuffer(byte[] buffer, int length, float factor) {
+        int sampleCount = length / 2;
+        for (int i = 0; i < sampleCount; i++) {
+            int idx = i * 2;
+            short sample = (short) ((buffer[idx] & 0xFF) | (buffer[idx + 1] << 8));
+            short attenuated = (short) Math.round(sample * factor);
+            buffer[idx] = (byte) (attenuated & 0xFF);
+            buffer[idx + 1] = (byte) ((attenuated >> 8) & 0xFF);
+        }
+    }
+
+    private synchronized void applyTelephonyBandpassFilter(byte[] buffer, int length) {
+        int sampleCount = length / 2;
+        for (int i = 0; i < sampleCount; i++) {
+            int idx = i * 2;
+            float in = (short) ((buffer[idx] & 0xFF) | (buffer[idx + 1] << 8));
+
+            // High-Pass Filter (cutoff ~280Hz at 16kHz)
+            float hpf_out = HPF_B0 * in + HPF_B1 * hpf_x1 + HPF_B2 * hpf_x2 - HPF_A1 * hpf_y1 - HPF_A2 * hpf_y2;
+            hpf_x2 = hpf_x1;
+            hpf_x1 = in;
+            hpf_y2 = hpf_y1;
+            hpf_y1 = hpf_out;
+
+            // Low-Pass Filter (cutoff ~3400Hz at 16kHz)
+            float lpf_out = LPF_B0 * hpf_out + LPF_B1 * lpf_x1 + LPF_B2 * lpf_x2 - LPF_A1 * lpf_y1 - LPF_A2 * lpf_y2;
+            lpf_x2 = lpf_x1;
+            lpf_x1 = hpf_out;
+            lpf_y2 = lpf_y1;
+            lpf_y1 = lpf_out;
+
+            int clamped = Math.round(lpf_out);
+            if (clamped > 32767) clamped = 32767;
+            else if (clamped < -32768) clamped = -32768;
+
+            buffer[idx] = (byte) (clamped & 0xFF);
+            buffer[idx + 1] = (byte) ((clamped >> 8) & 0xFF);
         }
     }
 
@@ -632,13 +699,13 @@ public class AudioRelayEngine {
             audioTrack.play();
             isPlaying.set(true);
 
-            // Ensure call audio volume is at a clear audible level (85%+)
+            // Ensure call audio volume is at a balanced clear level (75%)
             if (audioManager != null) {
                 try {
                     int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
                     int curVol = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
                     if (curVol < maxVol / 2) {
-                        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int) (maxVol * 0.85f), 0);
+                        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int) (maxVol * 0.75f), 0);
                     }
                 } catch (Throwable ignored) {}
             }
@@ -661,10 +728,17 @@ public class AudioRelayEngine {
             try {
                 audioTrack.write(data, offset, length);
 
+                float level = computeAudioLevel(data, offset, length);
                 long now = System.currentTimeMillis();
+
+                // Dynamic Echo Ducking: When Terminal voice plays out of speaker,
+                // mark time so recording mic is ducked to prevent echo screech!
+                if (level > 0.015f) {
+                    lastIncomingSpeechTime = now;
+                }
+
                 if (now - lastRxLevelTime > 80) {
                     lastRxLevelTime = now;
-                    float level = computeAudioLevel(data, offset, length);
                     if (listener != null) {
                         listener.onRxLevel(level);
                     }

@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             if (am.isSpeakerphoneOn()) am.setSpeakerphoneOn(false);
                             int maxCall = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-                            am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int)(maxCall * 0.85f), 0);
+                            am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int)(maxCall * 0.75f), 0);
                         } else if (isPrivate) {
                             if (am.isSpeakerphoneOn()) am.setSpeakerphoneOn(false);
                             am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, 0);
@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             if (!am.isSpeakerphoneOn()) am.setSpeakerphoneOn(true);
                             int maxCall = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-                            int targetVol = (int) (maxCall * 0.82f);
+                            int targetVol = (int) (maxCall * 0.75f);
                             am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, Math.max(1, targetVol), 0);
                         }
                     }
@@ -1191,7 +1191,7 @@ public class MainActivity extends AppCompatActivity {
                     am.setMode(AudioManager.MODE_IN_COMMUNICATION);
                     am.setSpeakerphoneOn(true);
                     int maxCall = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-                    am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, maxCall, 0);
+                    am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int) (maxCall * 0.75f), 0);
                 }
             }
         } catch (Throwable ignored) {}

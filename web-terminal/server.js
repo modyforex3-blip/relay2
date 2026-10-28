@@ -8,8 +8,8 @@ const PORT = process.env.PORT || 5050;
 const HTML_FILE = path.join(__dirname, 'index.html');
 const DASHBOARD_FILE = path.join(__dirname, 'dashboard.html');
 const DOWNLOAD_FILE = path.join(__dirname, 'download.html');
-const APK_FILENAME = 'GSM-Cloud-Relay-Gateway-v2.7.1.apk';
-const ZIP_FILENAME = 'GSM-Cloud-Relay-Gateway-v2.7.1.zip';
+const APK_FILENAME = 'GSM-Cloud-Relay-Gateway-v2.7.2.apk';
+const ZIP_FILENAME = 'GSM-Cloud-Relay-Gateway-v2.7.2.zip';
 const APK_FILE = fs.existsSync(path.join(__dirname, APK_FILENAME)) 
     ? path.join(__dirname, APK_FILENAME) 
     : (fs.existsSync(path.join(__dirname, '..', APK_FILENAME)) ? path.join(__dirname, '..', APK_FILENAME) : path.join(__dirname, '..', 'GSM-Cloud-Relay-Gateway-v2.6.apk'));

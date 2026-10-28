@@ -4,8 +4,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $sourceApk = "GsmRelayApp\app\build\outputs\apk\release\app-release.apk"
 $cleanApk = "GsmRelayApp\app\build\outputs\apk\release\clean-unsigned.apk"
 $alignedApk = "GsmRelayApp\app\build\outputs\apk\release\aligned.apk"
-$signedApk = "GSM-Cloud-Relay-Gateway-v2.7.1.apk"
-$zipFile = "GSM-Cloud-Relay-Gateway-v2.7.1.zip"
+$signedApk = "GSM-Cloud-Relay-Gateway-v2.7.2.apk"
+$zipFile = "GSM-Cloud-Relay-Gateway-v2.7.2.zip"
 
 Write-Host "Creating clean unsigned apk..."
 Copy-Item $sourceApk $cleanApk -Force
