@@ -1,7 +1,12 @@
 # PowerShell Script: Automatic Synchronization with GitHub & Render
 param(
-    [string]$CommitMessage = ""
+    [string]$CommitMessage = "",
+    [string]$Token = ""
 )
+
+if ([string]::IsNullOrWhiteSpace($Token) -and $env:GITHUB_TOKEN) {
+    $Token = $env:GITHUB_TOKEN
+}
 
 $gitPath = if (Get-Command git -ErrorAction SilentlyContinue) { "git" } else { "C:\Users\Ahmed\mingit\cmd\git.exe" }
 
@@ -45,8 +50,17 @@ if ($status) {
 # 4. Push to GitHub
 Write-Host "[4/4] Pushing changes to GitHub (origin main)..." -ForegroundColor Yellow
 & $gitPath branch -M main
+
+if (![string]::IsNullOrWhiteSpace($Token)) {
+    & $gitPath remote set-url origin "https://$($Token)@github.com/modyforex3-blip/relay2.git"
+}
+
 $pushResult = & $gitPath push -u origin main 2>&1
 Write-Host $pushResult
+
+if (![string]::IsNullOrWhiteSpace($Token)) {
+    & $gitPath remote set-url origin "https://github.com/modyforex3-blip/relay2.git"
+}
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
